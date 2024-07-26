@@ -1,0 +1,39 @@
+@layout('layouts/app.edge')
+
+@section('content')
+<div class="tags">
+	@each(tag in tags)
+	<a href="/tags/{{ tag.name }}">
+		{{ tag.name }}
+		<span class="postCount">({{ tag.postCount ?? 0 }})</span>
+	</a>
+	@endeach
+	<a href="/tags/new">+</a>
+</div>
+
+@endsection
+
+@section('styles')
+<style>
+	.tags
+	{
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.tags > a
+	{
+		text-decoration: none;
+		color: white;
+		background: var(--accent);
+		border-radius: var(--rounding);
+		padding: 5px 10px;
+	}
+
+	.tags a .postCount
+	{
+		opacity: 0.6;
+	}
+</style>
+@endsection

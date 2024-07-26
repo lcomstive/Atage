@@ -1,0 +1,17 @@
+@layout('layouts/app.edge')
+
+@section('styles')
+<style>
+	#content { text-align: center; }
+
+	#content button { padding: 7.5px 15px; }
+</style>
+@endsection
+
+@section('content')
+	<h1 style="font-size: 2em">Not found</h1>
+	<p style="color: var(--subtext-colour)">
+		We couldn't find the content you were looking for
+	</p>
+	<button onclick="location.href='/'">Home</button>
+@endsection

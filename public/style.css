@@ -1,0 +1,67 @@
+:root
+{
+	--text: #fff;
+	--background: #181723;
+	--accent: #8671ff;
+	--rounding: 5px;
+
+	--error: #ff3333;
+}
+
+html, body
+{
+	color: var(--text);
+	background: var(--background);
+	font-family: Verdana, sans-serif;
+}
+
+input
+{
+	color: var(--text);
+	padding: 5px 10px;
+	background: none;
+	border: none;
+	border-bottom: 1px solid var(--text);
+
+	transition: border-bottom-color 0.2s ease-in-out;
+}
+
+input::placeholder { color: var(--text); opacity: 0.6; }
+input:active, input:focus
+{
+	outline: none;
+	border-bottom-color: var(--accent);
+	transition: border-bottom-color 0.2s ease-in-out;
+}
+
+button
+{
+	border: none;
+	border-radius: var(--rounding);
+	padding: 5px;
+
+	transition: opacity 0.1s ease-in-out;
+}
+
+button:hover
+{
+	cursor: pointer;
+	opacity: 0.8;
+
+	transition: opacity 0.1s ease-in-out;
+}
+
+.vertical
+{
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.subtitle
+{
+	opacity: 0.6;
+	font-size: 0.75em;
+	margin: 0;
+}
+
