@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const { mongoose, ObjectId } = require('mongoose')
 
 const PostSchema = new mongoose.Schema({
 	author:
@@ -7,7 +7,9 @@ const PostSchema = new mongoose.Schema({
 		required: true
 	},
 	public: { type: Boolean },
-	filepath: { type: String, required: true }
+	filepath: { type: String },
+	description: { type: String },
+	tags: { type: [ObjectId], default: [] }
 })
 
 module.exports = mongoose.model('Post', PostSchema)

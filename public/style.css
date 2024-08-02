@@ -2,8 +2,10 @@
 {
 	--text: #fff;
 	--background: #181723;
+	--background2: #272541;
 	--accent: #8671ff;
 	--rounding: 5px;
+	--font: "Lato", sans-serif;
 
 	--error: #ff3333;
 }
@@ -12,11 +14,12 @@ html, body
 {
 	color: var(--text);
 	background: var(--background);
-	font-family: Verdana, sans-serif;
+	font-family: var(--font);
 }
 
 input
 {
+	font-family: var(--font);
 	color: var(--text);
 	padding: 5px 10px;
 	background: none;
@@ -65,3 +68,55 @@ button:hover
 	margin: 0;
 }
 
+/*
+From https://css-loaders.com/line/
+HTML: <div class="loadingIndicator"></div>
+*/
+.loadingIndicator
+{
+	width: 35px;
+	height: 35px;
+	margin: 0 auto;
+	aspect-ratio: 1;
+	--c1:linear-gradient(90deg,#0000 calc(100%/3),var(--accent) 0 calc(2*100%/3),#0000 0);
+	--c2:linear-gradient( 0deg,#0000 calc(100%/3),var(--accent) 0 calc(2*100%/3),#0000 0);
+	background: var(--c1),var(--c2),var(--c1),var(--c2);
+	background-size: 300% 4px,4px 300%;
+	background-repeat: no-repeat;
+	animation: loading-indicator 1s infinite linear;
+}
+  
+@keyframes loading-indicator
+{
+	0%   {background-position: 50%  0,100% 100%,0    100%,0 0}
+	25%  {background-position: 0    0,100% 50% ,0    100%,0 0}
+	50%  {background-position: 0    0,100% 0   ,50%  100%,0 0}
+	75%  {background-position: 0    0,100% 0   ,100% 100%,0 50%}
+    75.01%{background-position: 100% 0,100% 0   ,100% 100%,0 50%}
+	100% {background-position: 50%  0,100% 0   ,100% 100%,0 100%}
+}
+
+/* HTML: <div class="progressBar"><div></div></div> */
+.progressBar {
+	width: 50%;
+	margin: 0 auto;
+	height: 22px;
+	border-radius: 20px;
+	color: var(--accent);
+	border: 2px solid;
+	position: relative;
+}
+  
+.progressBar > div {
+	content: "";
+	position: absolute;
+	margin: 2px;
+	border-radius: inherit;
+	background: currentColor;
+
+	/* Change percentage by modifying second value */
+	/* Value is inverted, so '20%' is 80% full and '40%' is 60% full */
+	inset: 0 20% 0 0;
+
+	transition: inset 0.2s ease-out;
+}

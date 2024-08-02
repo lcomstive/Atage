@@ -6,18 +6,18 @@ const router = express.Router()
 router.get('/', async (req, res) =>
 {
 	let tags = await Tag.find({})
-	res.render('tags/list', { tags })
+	res.render('tags/list', { tags, user: req.session?.user })
 })
 
-router.get('/new', async (req, res) => res.render('tags/edit'))
+router.get('/new', async (req, res) => res.render('tags/edit', { user: req.session?.user}))
 
-router.get('/:name', async (req, res) =>
+router.get('/:name', async (req, res, next) =>
 {
 	let tag = await Tag.findOne({ name: req.params.name.toLowerCase() })
 	if(tag)
-		res.render('tags/edit', { tag })
+		res.render('tags/edit', { tag, user: req.session?.user })
 	else
-		res.render('404')
+		next()
 })
 
 module.exports = router

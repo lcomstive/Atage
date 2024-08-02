@@ -1,0 +1,25 @@
+@layout('layouts/app.edge')
+
+@section('content')
+<div class="vertical">
+	<img src="/api/posts/{{ post._id }}/img" />
+
+	<ul class="tags">
+		@each(tag in post.tagsNamed)
+			<li>{{ tag }}</li>
+		@endeach
+	</ul>
+
+	<p>Author: <a href="/users/{{ post.author }}">{{ post.authorName }}</a></p>
+
+	@if(isAuthor)
+		<button>Edit</button>
+	@endif
+</div>
+@endsection
+
+@section('styles')
+<style>
+
+</style>
+@endsection

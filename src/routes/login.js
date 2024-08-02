@@ -1,5 +1,19 @@
 module.exports =
 {
-	login: async (req, res) => res.render('login/login'),
-	register: async (req, res) => res.render('login/register')
+	login: async (req, res) => {
+		if(req.session?.userID ?? false)
+			res.redirect('/')
+		else
+			res.render('login/login')
+	},
+	register: async (req, res) => {
+		if(req.session?.userID ?? false)
+			res.redirect('/')
+		else
+			res.render('login/register')
+	},
+	logout: async (req, res) => {
+		req.session?.destroy()
+		res.redirect('/')
+	}
 }

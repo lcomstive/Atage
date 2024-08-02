@@ -1,0 +1,142 @@
+@layout('layouts/app.edge')
+
+@section('content')
+<div class="posts">
+	<a href="/posts/new" id="btnNew">+</a>
+
+	<div class="tagsAutocomplete">
+		<input placeholder="Tags" />
+		<ul class="tagsAutocompleteResults"></ul> <!-- Autocomplete results -->
+		<ul class="tagsAutocompleteSelected"></ul> <!-- Selected tags -->
+	</div>
+
+	<div class="postsContainer"></div>
+	<div style="width: 100%">
+		<div class="loadingIndicator"></div>
+	</div>
+
+	<script src="/tagsAutocomplete.js"></script>
+
+	<script>
+		let loadingIndicator = document.getElementsByClassName('loadingIndicator')[0]
+		let postsContainer = document.getElementsByClassName('postsContainer')[0]
+
+		loadPosts = (tags, append = false) =>
+		{
+			// console.log(tags)
+			let url = '/api/posts'
+			if(tags)
+				url += encodeURI(`?tags=${tags.join(',')}`)
+
+			if(!append)
+				postsContainer.innerHTML = ''
+
+			showLoadingIcon(true)
+
+			fetch(url)
+				.then(response => response.json())
+				.then(posts =>
+				{
+					showLoadingIcon(false)
+
+					for(let i = 0; i < posts.length; i++)
+					{
+						let img = document.createElement('img')
+						img.src = `/api/posts/${posts[i]._id}/img`
+						img.onclick = ev => document.location.href = `/posts/${posts[i]._id}`
+
+						postsContainer.appendChild(img)
+					}
+				})
+				.catch(err => console.error(err))
+		}
+
+		showLoadingIcon = (show) => loadingIndicator.style.display = show ? 'block' : 'none'
+
+		let tagInput = document.getElementsByClassName('tagsAutocomplete')[0]
+		tagInput.addEventListener('tagListUpdate', ev => loadPosts(ev.detail))
+		
+		window.addEventListener('DOMContentLoaded', ev => {
+			// Get initial list of posts
+			let tagParams = new URLSearchParams(window.location.search).get('tags')
+
+			let tags = []
+			if(tagParams && tagParams != '')
+			{
+				tags = decodeURI(tagParams)
+						.split(',')
+						.filter(x => x && x != '')
+			}
+
+			loadPosts(tags)
+		})
+	</script>
+</div>
+
+@endsection
+
+@section('styles')
+<link href="/tagsAutocomplete.css" rel="stylesheet" />
+
+<style>
+	.posts
+	{
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.tagsAutocomplete
+	{
+		flex-grow: 1;
+		width: 100%;
+	}
+
+	#btnNew
+	{
+		flex-grow: 1;
+		width: 100%;
+		height: 30px;
+		text-decoration: none;
+
+		border-radius: var(--rounding);
+
+		color: var(--text);
+		background: var(--accent);
+
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	#btnNew:hover
+	{
+		opacity: 0.8;
+		cursor: pointer;
+	}
+
+	.postsContainer
+	{
+		columns: 5 200px;
+		column-gap: 15px;
+		row-gap: 15px;
+		width: 90%;
+		margin: 0 auto;
+	}
+
+	.postsContainer > img
+	{
+		cursor: pointer;
+		margin-bottom: 10px;
+		border-radius: var(--rounding);
+		width: 100%;
+		height: auto;
+	}
+
+	.loadingIndicator
+	{
+		flex-grow: 1;
+		margin-bottom: 20px;
+	}
+</style>
+@endsection

@@ -42,14 +42,17 @@ app.use(expressSession({
 
 // Routing
 app.use('/api/tags', require('./routes/api/tags'))
+app.use('/api/posts', require('./routes/api/posts'))
 app.use(require('./routes/api/login'))
 
 const loginRoutes = require('./routes/login')
 app.get('/login', loginRoutes.login)
+app.get('/logout', loginRoutes.logout)
 app.get('/register', loginRoutes.register)
 
 app.use('/tags', require('./routes/tags'))
-app.get('/', (req, res) => res.render('home'))
+app.use('/posts', require('./routes/posts'))
+app.get('/', (req, res) => res.render('home', { user: req.session?.user }))
 
 // Fallback to 404 not found
 app.get('*', require('./routes/404'))

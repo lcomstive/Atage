@@ -82,6 +82,14 @@
 		if(response.status == 200)
 			document.location.href = '/'
 	}
+
+	const inputRegex = new RegExp('^[0-9a-zA-Z\-\_\(\)\:]*$')
+	window.addEventListener('load', err => {
+		document.getElementById('tagName').addEventListener('beforeinput', ev => {
+			if(ev.data != null && !inputRegex.test(ev.data))
+				ev.preventDefault()
+		})
+	})
 </script>
 
 @endsection

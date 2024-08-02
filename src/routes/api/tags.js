@@ -5,8 +5,16 @@ const router = express.Router()
 
 router.get('/', async (req, res) =>
 {
-	let tags = await Tag.find({})
-	return res.status(200).json(tags)
+	let search = req.query.search ?? ''
+	let tags = []
+	if(search != '')
+		tags = await Tag.find({ $or: [
+			{ name: { $regex: search, $options: 'i' } },
+			{ aliases: { $regex: search } }
+		]})
+	else
+		tags = await Tag.find({})
+	return res.json(tags)
 })
 
 router.get('/:id', async (req, res) =>

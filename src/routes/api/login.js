@@ -56,11 +56,20 @@ router.post('/api/login', async (req, res) =>
 		else if(same)
 		{
 			req.session.userID = user._id
+			req.session.user = {
+				id: user._id,
+				username: user.username
+			}
 			return res.json({ error: '', success: true })
 		}
 		else
 			return res.json({ error: 'Invalid password' })
 	})
+})
+
+router.get('/api/logout', (req, res) =>
+{
+	req.session?.destroy()
 })
 
 module.exports = router
