@@ -4,9 +4,11 @@ const Tag = require('../../models/tag')
 const auth = require('../../middleware/auth')
 const path = require('path')
 const fs = require('fs')
+const sharp = require('sharp')
 
 const router = express.Router()
 
+const ThumbnailExtension = '_thumbnail.webp'
 const PostMediaDirectory = path.join(__dirname, '../../../user-content')
 
 // Create post
@@ -18,8 +20,15 @@ router.post('/new', auth, async (req, res) =>
 		fs.mkdirSync(`${PostMediaDirectory}/${req.session.userID}`)
 
 	let posts = JSON.parse(req.body.posts)
+
+	// If single file upload, put into array
+	if(req.files.media && !req.files.media.length)
+		req.files.media = [req.files.media]
+
 	for(let i = 0; i < req.files?.media.length ?? 0; i++)
 	{
+		console.log(req.files.media[i].name)
+
 		let post = await Post.create({
 			author: req.session.userID,
 			public: posts[i].public ?? true,
@@ -35,10 +44,10 @@ router.post('/new', auth, async (req, res) =>
 				{ name: tagRaw },
 				{ aliases: { $in: tagRaw } }
 			]})
-			if(tag)
-				post.tags.push(tag._id)
-			else
-				console.log(`Couldn't find tag '${tagRaw}'`)
+			if(!tag)
+				tag = await Tag.create({ name: tagRaw })
+
+			post.tags.push(tag._id)
 		}
 
 		// Post media
@@ -46,14 +55,21 @@ router.post('/new', auth, async (req, res) =>
 		post.filepath = `${req.session.userID}/${post._id}${extension}`
 		let mediaOutput = `${PostMediaDirectory}/${post.filepath}`
 
-		await req.files.media[i].mv(
-			mediaOutput,
-			err => 
-			{
-				if(err)
-					console.error(`Failed to create file '${mediaOutput}'`, err)
-			})
+		console.log('Generating ' + mediaOutput)
 
+		await req.files.media[i].mv(mediaOutput)
+			.then(() =>
+			{
+				console.log('Generating thumbnail')
+
+				// Generate thumbnail
+				sharp(mediaOutput)
+					.resize(400 /* width, px */)
+					.toFile(`${mediaOutput}${ThumbnailExtension}`)
+					.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
+			})
+			.catch(err => console.error(`Failed to create file '${mediaOutput}'`, err))
+		
 		post.save()
 	}
 		
@@ -91,7 +107,7 @@ router.get('/:id/thumbnail', async (req, res) => {
 	let post = await Post.findById(req.params.id)
 	if(!post.public && post.author != req.session?.userID)
 		return res.status(403).send({ error: 'Not authorised' })
-	return res.sendFile(`${PostMediaDirectory}/${post.filepath}`)
+	return res.sendFile(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`)
 })
 
 // Get posts

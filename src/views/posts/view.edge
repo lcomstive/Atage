@@ -2,6 +2,14 @@
 
 @section('content')
 <div class="vertical">
+	<div class="horizontal">
+		<button onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+
+		@if(post.isAuthor)
+			<button><i class="fa-solid fa-pen-to-square"></i></button>
+		@endif
+	</div>
+
 	<img src="/api/posts/{{ post._id }}/img" />
 
 	<ul class="tags">
@@ -11,15 +19,21 @@
 	</ul>
 
 	<p>Author: <a href="/users/{{ post.author }}">{{ post.authorName }}</a></p>
-
-	@if(isAuthor)
-		<button>Edit</button>
-	@endif
 </div>
 @endsection
 
 @section('styles')
 <style>
+img
+{
+	margin: 0 auto;
+	max-width: 200px;
+}
 
+.horizontal button
+{
+	width: 35px;
+	height: 35px;
+}
 </style>
 @endsection

@@ -1,9 +1,10 @@
 :root
 {
 	--text: #fff;
-	--background: #181723;
-	--background2: #272541;
-	--accent: #8671ff;
+	--background: #121212;
+	--background2: #303030;
+	--accent: #E6A375;
+	--accent-gradient: linear-gradient(45deg, #E6A375, #ef8847);
 	--rounding: 5px;
 	--font: "Lato", sans-serif;
 
@@ -24,34 +25,84 @@ input
 	padding: 5px 10px;
 	background: none;
 	border: none;
-	border-bottom: 1px solid var(--text);
+	border-bottom: 1px solid transparent;
+	border-image: linear-gradient(var(--text), var(--text));
+	border-image-slice: 1;
 
-	transition: border-bottom-color 0.2s ease-in-out;
+	transition: all 0.25s ease-in-out;
 }
 
 input::placeholder { color: var(--text); opacity: 0.6; }
 input:active, input:focus
 {
 	outline: none;
-	border-bottom-color: var(--accent);
-	transition: border-bottom-color 0.2s ease-in-out;
+	border-image: var(--accent-gradient);
+	border-image-slice: 1;
+
+	transition: all 0.25s ease-in-out;
+}
+
+.fileInput
+{
+}
+
+.fileInput input[type="file"]
+{
+	opacity: 0;
+	width: 0.1px;
+	height: 0.1px;
+	position: absolute;
+}
+
+.fileInput label
+{
+	display: block;
+	position: relative;
+	padding: 10px 5px;
+	border-radius: var(--rounding);
+	background: none;
+	border: 1px solid var(--background2);
+	cursor: pointer;
+	text-align: center;
+}
+
+.fileInput label:hover
+{
+	background: var(--accent-gradient);
+}
+
+a
+{
+	color: var(--accent);
+	text-decoration: none;
+
+	transition: opacity 0.15s ease-in-out;
+}
+
+a:hover
+{
+	opacity: 0.8;
+	transition: opacity 0.15s ease-in-out;
 }
 
 button
 {
 	border: none;
-	border-radius: var(--rounding);
 	padding: 5px;
+	color: var(--text);
+	border-radius: var(--rounding);
+	border: 1px solid var(--background2);
+	background: none;
 
-	transition: opacity 0.1s ease-in-out;
+	transition: all 0.15s ease-in-out;
 }
 
 button:hover
 {
 	cursor: pointer;
-	opacity: 0.8;
+	background: var(--accent);
 
-	transition: opacity 0.1s ease-in-out;
+	transition: all 0.15s ease-in-out;
 }
 
 .vertical
@@ -59,6 +110,15 @@ button:hover
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+}
+
+.horizontal
+{
+	flex-grow: 1;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .subtitle

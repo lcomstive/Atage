@@ -2,15 +2,22 @@
 
 @section('content')
 <div class="vertical" id="postUploads">
-	<input
-		id="inputFiles"
-		type="file"
-		name="fileSelect"
-		multiple
-		accept="{{ postMediaFilters }}"
+	<div class="fileInput">
+		<input
+			id="inputFiles"
+			type="file"
+			name="fileSelect"
+			multiple
+			accept="{{ postMediaFilters }}"
 
-		onchange="onFilesChange()"
-	>
+			onchange="onFilesChange()"
+		>
+
+		<label for="inputFiles">
+			<i class="fa-solid fa-plus"></i>
+			<p>Add files</p>
+		</label>
+	</div>
 
 	<div id="postsContainer">
 		<template id="postTemplate">
@@ -18,23 +25,28 @@
 				<img class="postPreview" src="#" />
 
 				<div class="tagsAutocomplete">
-					<input placeholder="Tags" />
+					<div class="horizontal">
+						<input placeholder="Tags" />
+						<button class="tagsAutocompleteAdd"><i class="fa-solid fa-plus"></i></button>
+					</div>
 					<ul class="tagsAutocompleteResults"></ul> <!-- Autocomplete results -->
 					<ul class="tagsAutocompleteSelected"></ul> <!-- Selected tags -->
 				</div>
 			
 				<textarea class="postDescription" placeholder="Description"></textarea>
 			
-				<div class="postPublic">
-					<p>Public</p>
-					<input type="checkbox" checked />
+				<div class="horizontal">
+					<div class="postPublic">
+						<p>Public</p>
+						<input type="checkbox" checked />
+					</div>
+					<button class="btnRemove"><i class="fa-solid fa-trash"></i></button>
 				</div>
-				<button class="btnRemove">X</button>
 			</div>
 		</template>
 	</div>
 
-	<button onclick="onPostCreate(this)" id="btnCreate" disabled>Create</button>
+	<button onclick="onPostCreate(this)" id="btnCreate">Upload</button>
 	<p id="errorText"></p>
 
 	<div class="progressBar"><div></div></div>
@@ -51,9 +63,11 @@
 
 	let posts = []
 
+	createBtn.style.display = 'none'
+
 	onFilesChange = () =>
 	{		
-		createBtn.disabled = filesEl.files.length == 0
+		createBtn.style.display = filesEl.files.length == 0 ? 'none' : 'block'
 
 		for(let i = 0; i < filesEl.files.length; i++)
 		{
@@ -86,7 +100,7 @@
 	}
 
 	onPostCreate = async (btn) =>
-	{
+	{		
 		setUploadProgress(0)
 		showProgressBar(true)
 
@@ -149,6 +163,16 @@
 <link href="/tagsAutocomplete.css" rel="stylesheet" />
 
 <style>
+	.fileInput label
+	{
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		height: 30px;
+	}
+
 	#postUploads
 	{
 		max-width: 300px;
@@ -168,9 +192,9 @@
 	{
 		position: relative;
 		border-radius: var(--rounding);
-		background-color: rgba(255, 255, 255, 0.1);
+		border: 1px solid var(--background2);
 
-		padding: 5px 10px;
+		padding: 10px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -224,25 +248,39 @@
 		outline: none;
 	}
 
-	.post > .btnRemove
+	.post .btnRemove
 	{
-		position: absolute;
-		top: 10px; right: 10px;
-
-		width: 25px;
-		height: 25px;
+		width: 30px;
+		height: 30px;
 		color: var(--text);
-		background: var(--background2);
-		border: 1px solid var(--error);
+		border: 1px solid var(--text);
 		outline: none;
+		opacity: 0.6;
 
-		transition: border 0.2s ease-in-out;
+		transition: all 0.15s ease-in-out;
 	}
 
-	.post > .btnRemove:hover, .post > .btnRemove:focus
+	.post .btnRemove:hover, .post .btnRemove:focus
 	{
-		background-color: var(--error);
-		transition: border 0.2s ease-in-out;
+		opacity: 1.0;
+		color: var(--error);
+		background: var(--text);
+		transition: all 0.15s ease-in-out;
+	}
+
+	.tagsAutocomplete .horizontal { gap: 10px; }
+
+	.tagsAutocomplete input { flex-grow: 1; }
+
+	.tagsAutocomplete button
+	{
+		width: 30px;
+		height: 30px;
+	}
+
+	#btnCreate
+	{
+		height: 30px;
 	}
 
 	@media screen and (max-width: 600px)

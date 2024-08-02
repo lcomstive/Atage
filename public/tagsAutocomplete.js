@@ -5,6 +5,7 @@ const MinTagLength = 0 // Minimum characters to begin searching for tags
 let selectedTags = new Map()
 
 const tagListUpdateEvent = new Event('tagListUpdate')
+const inputRegex = new RegExp('^[0-9a-zA-Z\-\_\(\)\:]*$')
 
 window.addEventListener('load', ev =>
 {
@@ -19,6 +20,7 @@ registerAutocomplete = (container) =>
 	let inputField = container.getElementsByTagName('input')[0]
 	let resultsField = container.getElementsByClassName('tagsAutocompleteResults')[0]
 	let selectedField = container.getElementsByClassName('tagsAutocompleteSelected')[0]
+	let addButton = container.getElementsByClassName('tagsAutocompleteAdd')[0]
 
 	selectedTags.set(container, new Array())
 
@@ -26,11 +28,32 @@ registerAutocomplete = (container) =>
 	resultsField.addEventListener('click', selectItem)
 	selectedField.addEventListener('click', removeItem)
 
+	inputField.addEventListener('beforeinput', ev => {
+		if(ev.data != null && !inputRegex.test(ev.data))
+			ev.preventDefault()
+
+		if(ev.inputType == 'insertLineBreak')
+			addNewTag(container, inputField)
+	})
+
 	document.addEventListener('click', ev =>
 	{
 		if(!resultsField.contains(ev.target))
 			closeAutocompleteResults(resultsField)
 	})
+
+	if(addButton)
+		addButton.addEventListener('click', ev => addNewTag(container, inputField))
+}
+
+addNewTag = (container, inputField) =>
+{
+	addTag(container, inputField.value)
+	inputField.value = ''
+
+	let resultsField = container.getElementsByClassName('tagsAutocompleteResults')[0]
+	if(resultsField)
+		resultsField.innerHTML = ''
 }
 
 addTagUpdateCallback = (cb) => tagUpdateCallbacks.push(cb)
@@ -38,8 +61,12 @@ removeTagUpdateCallback = (cb) => tagUpdateCallbacks.splice(tagUpdateCallbacks.i
 
 checkAutocomplete = ({ target }) =>
 {
+	let parent = target.parentNode
+	if(parent.classList.contains('horizontal'))
+		parent = parent.parentNode
+
 	let search = target.value
-	let listField = target.parentNode.getElementsByClassName('tagsAutocompleteResults')[0]
+	let listField = parent.getElementsByClassName('tagsAutocompleteResults')[0]
 	listField.innerHTML = ''
 
 	if(!search.length || search.length < MinTagLength)
