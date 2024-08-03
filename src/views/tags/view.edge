@@ -5,23 +5,14 @@
 	<div class="horizontal">
 		<button onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
 
-		@if(post.isAuthor)
-			<button onclick="document.location.href = '/posts/{{ post._id }}/edit'"><i class="fa-solid fa-pen-to-square"></i></button>
+		<h3 class="tag">{{ tag.name }}</h3>
+
+		@if(user.moderator)
+			<button onclick="document.location.href = '/tags/{{ tag.name }}/edit'"><i class="fa-solid fa-pen-to-square"></i></button>
 		@else
-			<p>Nope</p>
+			<span style="width:35px;height:35px" />
 		@endif
 	</div>
-
-	<img src="/api/posts/{{ post._id }}/img" />
-
-	<ul class="tags">
-		@each(tag in post.tagsNamed)
-			<li onclick="document.location.href='/tags/{{ tag }}'">{{ tag }}</li>
-		@endeach
-	</ul>
-
-	<p>Author: <a href="/users/{{ post.author }}">{{ post.authorName }}</a></p>
-	<p>{{ post.description }}</p>
 </div>
 @endsection
 

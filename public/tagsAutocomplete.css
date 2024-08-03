@@ -30,7 +30,7 @@
 	padding: 2.5px 5px;
 }
 
-.tagsAutocompleteResults > li:hover
+.tagsAutocompleteResults > li:hover, .tagsAutocompleteResults > li.highlight
 {
 	background: var(--accent);
 }

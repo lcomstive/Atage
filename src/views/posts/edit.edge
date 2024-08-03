@@ -1,0 +1,123 @@
+@layout('layouts/app.edge')
+
+@section('content')
+<div class="post vertical">
+	<button onclick="history.back()" style="width:35px;height:35px"><i class="fa-solid fa-arrow-left"></i></button>
+
+	<img class="postPreview" src="/api/posts/{{ post._id }}/img" />
+
+	<div class="tagsAutocomplete">
+		<div class="horizontal">
+			<input placeholder="Tags" />
+			<button class="tagsAutocompleteAdd"><i class="fa-solid fa-plus"></i></button>
+		</div>
+		<ul class="tagsAutocompleteResults"></ul> <!-- Autocomplete results -->
+		<ul class="tagsAutocompleteSelected"></ul> <!-- Selected tags -->
+	</div>
+
+	<textarea class="postDescription" placeholder="Description">{{ post.description }}</textarea>
+
+	<div class="horizontal">
+		<div class="postPublic">
+			<p>Public</p>
+			<input type="checkbox" checked />
+		</div>
+		<button class="btnRemove"><i class="fa-solid fa-trash"></i></button>
+	</div>
+
+	<button onclick="updatePost(this)" style="height: 50px">Update</button>
+</div>
+
+<script src="/tagsAutocomplete.js"></script>
+<script>
+	let tags = [
+		@each(tag in post.tagsNamed)
+		"{{ tag }}",
+		@endeach
+	]
+
+	let postPublic = document.getElementsByClassName('postPublic')[0]
+						.getElementsByTagName('input')[0]
+	let description = document.getElementsByClassName('postDescription')[0]
+	let autocompleteContainer = document.getElementsByClassName('tagsAutocomplete')[0]
+
+	window.addEventListener('load', ev =>
+	{
+		if(tags.length > 0)
+			addTags(autocompleteContainer, tags)
+	})
+
+	updatePost = (btn) =>
+	{
+		btn.disabled = true
+
+		let post = {
+			tags: selectedTags.get(autocompleteContainer),
+			description: description.value,
+			public: postPublic.checked
+		}
+
+		fetch(`/api/posts/{{ post._id }}/update`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(post)
+		})
+			.then(() => document.location.href = '/posts/{{ post._id }}')
+			.catch(err => console.error(err))
+	}
+</script>
+@endsection
+
+@section('styles')
+<link href="/tagsAutocomplete.css" rel="stylesheet" />
+
+<style>
+img
+{
+	margin: 0 auto;
+	max-width: 80vw;
+	border-radius: var(--rounding);
+}
+
+.horizontal button
+{
+	width: 35px;
+	height: 35px;
+}
+
+.postPublic
+{
+	width: 120px;
+	display: flex;
+	gap: 20px;
+}
+
+.btnRemove:hover { background: var(--error); }
+
+.postDescription
+{
+	outline: none;
+	padding: 10px;
+	resize: vertical;
+	border: 1px solid transparent;
+	border-radius: var(--rounding);
+
+	color: var(--text);
+	background: rgba(255, 255, 255, 0.1);
+
+	transition: border 0.2s ease-in-out; 
+}
+
+.postDescription::placeholder
+{
+	color: var(--text);
+	opacity: 0.6;
+}
+
+.postDescription:focus, .postDescription:active
+{
+	border-color: var(--accent);
+	transition: border 0.2s ease-in-out; 
+}
+</style>
+@endsection

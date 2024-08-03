@@ -11,6 +11,13 @@ const router = express.Router()
 const ThumbnailExtension = '_thumbnail.webp'
 const PostMediaDirectory = path.join(__dirname, '../../../user-content')
 
+findTag = async (tagName) => await Tag.findOne(
+	{
+		$or: [
+		{ name: tagName },
+		{ aliases: { $in: tagName } }
+	]})
+
 // Create post
 router.post('/new', auth, async (req, res) =>
 {
@@ -40,10 +47,7 @@ router.post('/new', auth, async (req, res) =>
 		for(let t = 0; t < posts[i].tags?.length ?? 0; t++)
 		{
 			let tagRaw = posts[i].tags[t].toLowerCase()
-			let tag = await Tag.findOne({ $or: [
-				{ name: tagRaw },
-				{ aliases: { $in: tagRaw } }
-			]})
+			let tag = await findTag(tagRaw)
 			if(!tag)
 				tag = await Tag.create({ name: tagRaw })
 
@@ -55,13 +59,9 @@ router.post('/new', auth, async (req, res) =>
 		post.filepath = `${req.session.userID}/${post._id}${extension}`
 		let mediaOutput = `${PostMediaDirectory}/${post.filepath}`
 
-		console.log('Generating ' + mediaOutput)
-
 		await req.files.media[i].mv(mediaOutput)
 			.then(() =>
 			{
-				console.log('Generating thumbnail')
-
 				// Generate thumbnail
 				sharp(mediaOutput)
 					.resize(400 /* width, px */)
@@ -77,12 +77,26 @@ router.post('/new', auth, async (req, res) =>
 })
 
 // Update post
-/*
-router.patch('/:id', async (req, res) =>
+router.post('/:id/update', async (req, res) =>
 {
-	
+	let post = await Post.findById(req.params.id)
+
+	post.public = req.body.public ?? true
+	post.description = req.body.description ?? ''
+
+	post.tags = []
+	for(let i = 0; i < req.body.tags?.length; i++)
+	{
+		let tag = await findTag(req.body.tags[i].toLowerCase())
+		if(!tag)
+			tag = await Tag.create({ name: req.body.tags[i].toLowerCase() })
+
+		post.tags.push(tag._id)
+	}
+
+	post.save()
+	res.send({ success: true })
 })
-*/
 
 // Get post
 router.get('/:id', async (req, res) =>
@@ -125,10 +139,7 @@ router.get('/', async (req, res) =>
 	for(let i = 0; i < tagsRaw?.length ?? 0; i++)
 	{
 		tagsRaw[i] = tagsRaw[i].toLowerCase()
-		let tag = await Tag.findOne({ $or: [
-			{ name: tagsRaw[i] },
-			{ aliases: { $in: tagsRaw[i] } }
-		]})
+		let tag = await findTag(tagsRaw[i])
 		if(tag)
 			tags.push(tag._id)
 	}

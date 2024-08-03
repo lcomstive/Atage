@@ -20,48 +20,19 @@
 		<div class="loadingIndicator"></div>
 	</div>
 
+	<script src="/loadPosts.js"></script>
 	<script src="/tagsAutocomplete.js"></script>
 
 	<script>
 		let loadingIndicator = document.getElementsByClassName('loadingIndicator')[0]
 		let postsContainer = document.getElementsByClassName('postsContainer')[0]
 
-		loadPosts = (tags, append = false) =>
-		{
-			// console.log(tags)
-			let url = '/api/posts'
-			if(tags)
-				url += encodeURI(`?tags=${tags.join(',')}`)
-
-			if(!append)
-				postsContainer.innerHTML = ''
-
-			showLoadingIcon(true)
-
-			fetch(url)
-				.then(response => response.json())
-				.then(posts =>
-				{
-					showLoadingIcon(false)
-
-					for(let i = 0; i < posts.length; i++)
-					{
-						let img = document.createElement('img')
-						img.src = `/api/posts/${posts[i]._id}/thumbnail`
-						img.onclick = ev => document.location.href = `/posts/${posts[i]._id}`
-
-						postsContainer.appendChild(img)
-					}
-				})
-				.catch(err => console.error(err))
-		}
-
 		showLoadingIcon = (show) => loadingIndicator.style.display = show ? 'block' : 'none'
-
-		let tagInput = document.getElementsByClassName('tagsAutocomplete')[0]
-		tagInput.addEventListener('tagListUpdate', ev => loadPosts(ev.detail))
 		
 		window.addEventListener('DOMContentLoaded', ev => {
+			let autocomplete = document.getElementsByClassName('tagsAutocomplete')[0]
+			registerAutocomplete(autocomplete)
+
 			// Get initial list of posts
 			let tagParams = new URLSearchParams(window.location.search).get('tags')
 
@@ -72,8 +43,27 @@
 						.split(',')
 						.filter(x => x && x != '')
 			}
+			addTags(autocomplete, tags)
 
-			loadPosts(tags)
+			showLoadingIcon(true)
+			loadPosts(tags, { container: postsContainer },
+				posts => showLoadingIcon(false))
+
+			autocomplete.addEventListener('tagListUpdate', ev => {
+				// Update URL params to reflect tags requested
+				const url = new URL(window.location.href)
+				if(ev.detail && ev.detail.length > 0)
+					url.searchParams.set('tags', ev.detail)
+				else
+					url.searchParams.delete('tags')
+				
+				window.history.replaceState(null, null, url)
+
+				// Get posts
+				showLoadingIcon(true)
+				loadPosts(ev.detail, { container: postsContainer },
+					posts => showLoadingIcon(false))
+			})
 		})
 	</script>
 </div>

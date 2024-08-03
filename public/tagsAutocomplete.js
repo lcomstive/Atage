@@ -4,6 +4,11 @@ const MinTagLength = 0 // Minimum characters to begin searching for tags
 // Value: Array of tags that have been selected
 let selectedTags = new Map()
 
+let highlightedTag = {
+	tag: '',
+	container: null
+}
+
 const tagListUpdateEvent = new Event('tagListUpdate')
 const inputRegex = new RegExp('^[0-9a-zA-Z\-\_\(\)\:]*$')
 
@@ -15,8 +20,12 @@ window.addEventListener('load', ev =>
 		registerAutocomplete(inputs[i])
 })
 
-registerAutocomplete = (container) =>
+// `allowNewTags` lets user add tags that haven't been created previously
+registerAutocomplete = (container, allowNewTags = false) =>
 {
+	if(selectedTags.has(container))
+		return
+
 	let inputField = container.getElementsByTagName('input')[0]
 	let resultsField = container.getElementsByClassName('tagsAutocompleteResults')[0]
 	let selectedField = container.getElementsByClassName('tagsAutocompleteSelected')[0]
@@ -28,12 +37,90 @@ registerAutocomplete = (container) =>
 	resultsField.addEventListener('click', selectItem)
 	selectedField.addEventListener('click', removeItem)
 
+	// Restrict tag input using regex test
 	inputField.addEventListener('beforeinput', ev => {
 		if(ev.data != null && !inputRegex.test(ev.data))
 			ev.preventDefault()
+	})
 
-		if(ev.inputType == 'insertLineBreak')
-			addNewTag(container, inputField)
+	// Handle special key cases (e.g. arrow keys, enter, tab)
+	inputField.addEventListener('keydown', ev =>
+	{
+		switch(ev.keyCode)
+		{
+			case 32: // Space
+				getAutocompleteValues(inputField.value, resultsField)
+				break
+			case 13: // Enter
+				if(highlightedTag.tag != '' && highlightedTag.container == container)
+					addTag(container, highlightedTag.tag)
+				else if(allowNewTags)
+					addNewTag(container, inputField)
+				else if(resultsField.childElementCount > 0) // First result is used
+					addTag(container, resultsField.firstElementChild.innerHTML)
+				else
+					break
+
+				if(highlightedTag.container == container)
+					highlightedTag = { tag: '', container: null }
+
+				inputField.value = ''
+				closeAutocompleteResults(resultsField)
+				break
+			case 9: // TAB
+				if(highlightedTag.tag != '' && highlightedTag.container == container)
+				{
+					addTag(container, highlightedTag.tag)
+					highlightedTag = { tag: '', container: null }
+				}
+				else if(resultsField.firstElementChild)
+					addTag(container, resultsField.firstElementChild.innerHTML)
+				else
+					break
+				
+				inputField.value = ''
+				closeAutocompleteResults(resultsField)
+
+				ev.preventDefault()
+				break
+			case 38: // Arrow Up
+			case 40: // Arrow Down
+				if(resultsField.childElementCount == 0)
+					break
+
+				// No element currently highlighted
+				if(highlightedTag.tag == '' && highlightedTag.container == null)
+				{
+					let child = resultsField.firstElementChild
+					if(ev.keyCode == 38) // Arrow up, choose last element instead
+						child = resultsField.lastElementChild
+					
+					child.classList.add('highlight')
+					child.focus()
+
+					highlightedTag = { tag: child.innerHTML, container }
+					break
+				}
+
+				// Navigate highlight, loop top and bottom
+				for(let i = 0; i < resultsField.childElementCount; i++)
+				{
+					if(resultsField.children[i].innerHTML != highlightedTag.tag)
+						continue
+
+					let newIndex = ev.keyCode == 40 ? i + 1 : i - 1
+					if(newIndex < 0) newIndex = resultsField.childElementCount - 1
+					if(newIndex >= resultsField.childElementCount) newIndex = 0
+
+					resultsField.children[i].classList.remove('highlight')
+					resultsField.children[newIndex].classList.add('highlight')
+					highlightedTag.tag = resultsField.children[newIndex].innerHTML
+
+					resultsField.children[newIndex].focus()
+					break
+				}
+				break
+		}
 	})
 
 	document.addEventListener('click', ev =>
@@ -42,14 +129,19 @@ registerAutocomplete = (container) =>
 			closeAutocompleteResults(resultsField)
 	})
 
-	if(addButton)
+	if(addButton && allowNewTags)
 		addButton.addEventListener('click', ev => addNewTag(container, inputField))
 }
 
 addNewTag = (container, inputField) =>
 {
-	addTag(container, inputField.value)
+	let tag = inputField.value.toLowerCase()
 	inputField.value = ''
+
+	if(tag == '' || selectedTags.get(container).includes(tag))
+		return
+
+	addTag(container, tag)
 
 	let resultsField = container.getElementsByClassName('tagsAutocompleteResults')[0]
 	if(resultsField)
@@ -86,11 +178,16 @@ addTags = (container, tags) =>
 	selectedList.innerHTML = ''
 	for(let i = 0; i < selected.length; i++)
 		selectedList.innerHTML += `<li>${selected[i]}</li>`
+
+	container.dispatchEvent(new CustomEvent('tagListUpdate', { detail: selected }))
 }
 
 removeTag = (container, tag) =>
 {
 	let selected = selectedTags.get(container)
+	if(!selected)
+		return
+	
 	selected.splice(selected.indexOf(tag), 1)
 	
 	let selectedList = container.getElementsByClassName('tagsAutocompleteSelected')[0]
@@ -112,8 +209,6 @@ selectItem = ({ target }) =>
 
 	searchInput.value = ''
 	resultsList.innerHTML = ''
-
-	container.dispatchEvent(new CustomEvent('tagListUpdate', { detail: selectedTags.get(container) }))
 }
 
 removeItem = ({ target }) =>
@@ -124,7 +219,13 @@ removeItem = ({ target }) =>
 	container.dispatchEvent(new CustomEvent('tagListUpdate', { detail: selectedTags.get(container) }))
 }
 
-closeAutocompleteResults = (listField) => listField.innerHTML = ''
+closeAutocompleteResults = (listField) =>
+{
+	if(highlightedTag.container == listField.parentElement)
+		highlightedTag = { tag: '', container: null }
+
+	listField.innerHTML = ''
+}
 closeAllAutocompleteResults = () =>
 {
 	let lists = document.getElementsByClassName('tagsAutocompleteResults')

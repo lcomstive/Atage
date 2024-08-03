@@ -58,7 +58,8 @@ router.post('/api/login', async (req, res) =>
 			req.session.userID = user._id
 			req.session.user = {
 				id: user._id,
-				username: user.username
+				username: user.username,
+				moderator: user.moderator
 			}
 			return res.json({ error: '', success: true })
 		}
