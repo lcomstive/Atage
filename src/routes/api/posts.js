@@ -168,7 +168,6 @@ router.delete('/:id', auth, async (req, res) =>
 
 	await Post.findByIdAndDelete(req.params.id)
 
-
 	for(let i = 0; i < tags.length; i++)
 		updateTagPostCount(tags[i])
 

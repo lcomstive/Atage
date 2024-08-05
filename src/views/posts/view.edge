@@ -11,9 +11,9 @@
 	</div>
 
 	@if(!post.isVideo)
-		<img async src="/api/posts/{{ post._id }}/img" decoding="async" />
+		<img async src="/api/posts/{{ post._id }}/img" decoding="async" id="postMedia" />
 	@else
-		<video src="/api/posts/{{ post._id }}/img" controls></video>
+		<video src="/api/posts/{{ post._id }}/img" controls id="postMedia"></video>
 	@endif
 
 	<div class="centerContent">
@@ -27,20 +27,34 @@
 		</ul>
 
 		<p>Author: <a href="/users/{{ post.author }}">{{ post.authorName }}</a></p>
+		<a onclick="magnifyMedia()">View original size</a>
 		<p>{{ post.description }}</p>
 	</div>
 </div>
+
+<script>
+	let media = document.getElementById('postMedia')
+
+	magnifyMedia = () => media.classList.toggle('magnify')
+</script>
 @endsection
 
 @section('styles')
 <link href="/tagsAutocomplete.css" rel="stylesheet" />
 
 <style>
-img
+img, video
 {
 	margin: 0 auto;
 	max-width: 80vw;
+	max-height: 80vh;
 	border-radius: var(--rounding);
+}
+
+img.magnify, video.magnify
+{
+	max-width: unset;
+	max-height: unset;
 }
 
 .horizontal button
