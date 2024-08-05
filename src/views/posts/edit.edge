@@ -6,14 +6,7 @@
 
 	<img class="postPreview" src="/api/posts/{{ post._id }}/img" />
 
-	<div class="tagsAutocomplete">
-		<div class="horizontal">
-			<input placeholder="Tags" />
-			<button class="tagsAutocompleteAdd"><i class="fa-solid fa-plus"></i></button>
-		</div>
-		<ul class="tagsAutocompleteResults"></ul> <!-- Autocomplete results -->
-		<ul class="tagsAutocompleteSelected"></ul> <!-- Selected tags -->
-	</div>
+	@!component('components/tagsAutocomplete.edge', { addButton: true })
 
 	<textarea class="postDescription" placeholder="Description">{{ post.description }}</textarea>
 

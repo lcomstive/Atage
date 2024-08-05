@@ -3,11 +3,7 @@
 @section('content')
 <div class="posts">
 	<div class="horizontal">
-		<div class="tagsAutocomplete">
-			<input placeholder="Tags" />
-			<ul class="tagsAutocompleteResults"></ul> <!-- Autocomplete results -->
-			<ul class="tagsAutocompleteSelected"></ul> <!-- Selected tags -->
-		</div>
+		@!component('components/tagsAutocomplete.edge')
 
 		<button onclick="document.location.href = '/posts/new'" id="btnNew">
 			<i class="fa-solid fa-plus"></i>
@@ -17,48 +13,48 @@
 
 	@!component('components/postsContainer.edge')
 	@!component('components/loadingIndicator.edge')
-
-	<script src="/tagsAutocomplete.js"></script>
-	<script>
-		let loadingIndicator = document.getElementsByClassName('loadingIndicator')[0]
-		
-		window.addEventListener('DOMContentLoaded', ev => {
-			let autocomplete = document.getElementsByClassName('tagsAutocomplete')[0]
-			registerAutocomplete(autocomplete)
-
-			// Get initial list of posts
-			let tagParams = new URLSearchParams(window.location.search).get('tags')
-
-			let tags = []
-			if(tagParams && tagParams != '')
-			{
-				tags = decodeURI(tagParams)
-						.split(',')
-						.filter(x => x && x != '')
-			}
-			addTags(autocomplete, tags)
-
-			showLoadingIcon(true)
-			loadPosts(tags).then(posts => showLoadingIcon(false))
-
-			autocomplete.addEventListener('tagListUpdate', ev => {
-				// Update URL params to reflect tags requested
-				const url = new URL(window.location.href)
-				if(ev.detail && ev.detail.length > 0)
-					url.searchParams.set('tags', ev.detail)
-				else
-					url.searchParams.delete('tags')
-				
-				window.history.replaceState(null, null, url)
-
-				// Get posts
-				showLoadingIcon(true)
-				loadPosts(ev.detail)
-					.then(posts => showLoadingIcon(false))
-			})
-		})
-	</script>
 </div>
+
+<script src="/tagsAutocomplete.js"></script>
+<script>
+	let loadingIndicator = document.getElementsByClassName('loadingIndicator')[0]
+	
+	window.addEventListener('DOMContentLoaded', ev => {
+		let autocomplete = document.getElementsByClassName('tagsAutocomplete')[0]
+		registerAutocomplete(autocomplete)
+
+		// Get initial list of posts
+		let tagParams = new URLSearchParams(window.location.search).get('tags')
+
+		let tags = []
+		if(tagParams && tagParams != '')
+		{
+			tags = decodeURI(tagParams)
+					.split(',')
+					.filter(x => x && x != '')
+		}
+		addTags(autocomplete, tags)
+
+		showLoadingIcon(true)
+		loadPosts(tags).then(posts => showLoadingIcon(false))
+
+		autocomplete.addEventListener('tagListUpdate', ev => {
+			// Update URL params to reflect tags requested
+			const url = new URL(window.location.href)
+			if(ev.detail && ev.detail.length > 0)
+				url.searchParams.set('tags', ev.detail)
+			else
+				url.searchParams.delete('tags')
+			
+			window.history.replaceState(null, null, url)
+
+			// Get posts
+			showLoadingIcon(true)
+			loadPosts(ev.detail)
+				.then(posts => showLoadingIcon(false))
+		})
+	})
+</script>
 
 @endsection
 
