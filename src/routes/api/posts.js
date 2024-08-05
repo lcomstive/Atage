@@ -108,6 +108,16 @@ router.get('/:id', async (req, res) =>
 	return res.status(200).json(post)
 })
 
+router.delete('/:id', auth, async (req, res) =>
+{
+	let post = await Post.findById(req.params.id)
+	if(post.author != req.session?.userID)
+		return res.status(403).send({ error: 'Not authorised '})
+
+	await Post.findByIdAndDelete(req.params.id)
+	res.send({ success: true })
+})
+
 // Get post image
 router.get('/:id/img', async (req, res) => {
 	let post = await Post.findById(req.params.id)

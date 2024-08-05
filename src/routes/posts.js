@@ -27,11 +27,13 @@ router.get('/', async (req, res) => res.render('posts/list', { user: req.session
 router.get('/new', auth, async (req, res) =>
 	res.render('posts/new', { postMediaFilters, user: req.session?.user }))
 
-router.get('/:id/edit', async (req, res, next) =>
+router.get('/:id/edit', auth, async (req, res, next) =>
 {
 	let post = await Post.findById(req.params.id)
 	if(!post)
 		return next()
+	if(post.author != req.session?.userID)
+		return res.status(403).redirect(`/posts/${req.params.id}`)
 
 	post.tagsNamed = []
 	for(let i = 0; i < post.tags.length; i++)

@@ -22,7 +22,11 @@
 			<p>Public</p>
 			<input type="checkbox" checked />
 		</div>
-		<button class="btnRemove"><i class="fa-solid fa-trash"></i></button>
+
+		<span class="horizontal" style="justify-content:right">
+			<button onclick="deletePost()" style="width:0;display:none">Confirm</button>
+			<button class="btnRemove" onclick="confirmDeletePost(this)"><i class="fa-solid fa-trash"></i></button>
+		</span>
 	</div>
 
 	<button onclick="updatePost(this)" style="height: 50px">Update</button>
@@ -65,6 +69,34 @@
 			.then(() => document.location.href = '/posts/{{ post._id }}')
 			.catch(err => console.error(err))
 	}
+
+	deletePost = () =>
+	{
+		fetch('/api/posts/{{ post._id }}', { method: 'DELETE' })
+			.then(response => response.json())
+			.then(json => {
+				if(json.error)
+					console.error(json.error)
+				else if(json.success)
+					document.location.href = '/posts'
+			})
+			.catch(err => console.error(`Failed to delete post`, err))
+	}
+
+	confirmDeletePost = (btn) =>
+	{
+		let show = btn.innerHTML.includes('trash')
+		let container = btn.parentElement
+
+		let confirmBtn = container.firstElementChild
+		confirmBtn.style.display = show ? 'block' : 'none'
+		confirmBtn.style.width = show ? '75px' : '0'
+		confirmBtn.style.background = show ? 'var(--error)' : 'none'
+		confirmBtn.focus()
+
+		let cancelBtn = container.lastElementChild
+		cancelBtn.innerHTML = `<i class="fa-solid fa-${show ? 'x' : 'trash'}"></i>`
+	}
 </script>
 @endsection
 
@@ -92,7 +124,7 @@ img
 	gap: 20px;
 }
 
-.btnRemove:hover { background: var(--error); }
+.btnRemove:hover, .btnRemove:focus { background: var(--error); }
 
 .postDescription
 {

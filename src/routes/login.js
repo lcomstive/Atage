@@ -14,6 +14,7 @@ module.exports =
 	},
 	logout: async (req, res) => {
 		req.session?.destroy()
+		req.session = null
 		res.redirect('/')
 	}
 }
