@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="vertical">
-	<div class="horizontal">
+	<div class="horizontal centerContent" style="width: 100%">
 		<button onclick="document.location.href='/posts/'"><i class="fa-solid fa-arrow-left"></i></button>
 
 		@if(post.isAuthor)
@@ -12,14 +12,19 @@
 
 	<img src="/api/posts/{{ post._id }}/img" />
 
-	<ul class="tags">
-		@each(tag in post.tagsNamed)
-			<li onclick="document.location.href='/tags/{{ tag }}'">{{ tag }}</li>
-		@endeach
-	</ul>
+	<div class="centerContent">
+		<ul class="tags">
+			@each(tag in post.tagData)
+				<li onclick="document.location.href='/posts/?tags={{ tag.name }}'">
+					{{ tag.name }}
+					<span class="subtext">({{ tag.postCount }})</span>
+				</li>
+			@endeach
+		</ul>
 
-	<p>Author: <a href="/users/{{ post.author }}">{{ post.authorName }}</a></p>
-	<p>{{ post.description }}</p>
+		<p>Author: <a href="/users/{{ post.author }}">{{ post.authorName }}</a></p>
+		<p>{{ post.description }}</p>
+	</div>
 </div>
 @endsection
 

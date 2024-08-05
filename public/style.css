@@ -9,6 +9,8 @@
 	--font: "Lato", sans-serif;
 
 	--error: #ff3333;
+
+	--content-width: 600px;
 }
 
 html, body
@@ -148,4 +150,11 @@ button:hover, button:focus
 	inset: 0 20% 0 0;
 
 	transition: inset 0.2s ease-out;
+}
+
+.centerContent
+{
+	width: 100%;
+	max-width: var(--content-width);
+	margin: 0 auto;
 }

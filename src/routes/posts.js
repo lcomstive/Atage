@@ -54,12 +54,15 @@ router.get('/:id', async (req, res, next) =>
 		let author = await User.findById(post.author)
 		post.authorName = author.username
 
-		post.tagsNamed = []
+		post.tagData = []
 		for(let i = 0; i < post.tags.length; i++)
 		{
 			let tag = await Tag.findById(post.tags[i])
 			if(tag)
-				post.tagsNamed.push(tag.name)
+				post.tagData.push({
+					name: tag.name,
+					postCount: tag.postCount
+				})
 		}
 
 		post.isAuthor = post.author == req.session?.userID

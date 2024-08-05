@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="posts">
-	<div class="horizontal">
+	<div class="horizontal centerContent">
 		@!component('components/tagsAutocomplete.edge')
 
 		<button onclick="document.location.href = '/posts/new'" id="btnNew">
@@ -67,9 +67,8 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
-		max-width: 1100px;
 	}
-
+	
 	.tagsAutocomplete
 	{
 		width: 75%;

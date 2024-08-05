@@ -8,6 +8,8 @@ const expressEdge = require('express-edge')
 const mongoStore = require('connect-mongo')
 const fileUpload = require('express-fileupload')
 const expressSession = require('express-session')
+const Tag = require('./models/tag')
+const Post = require('./models/post')
 
 const auth = require('./middleware/auth')
 
@@ -62,7 +64,21 @@ let port = process.env.PORT || 3000
 let sslKey = process.env.SSL_KEY
 let sslCert = process.env.SSL_CERT
 
-onServerStart = () => console.log(`Server started on port ${port}`)
+onServerStart = async () => {
+	console.log(`Server started on port ${port}`)
+
+	// Update tag post counts
+	let tags = await Tag.find({})
+	for(let i = 0; i < tags.length; i++)
+	{
+		tags[i].postCount = await Post.countDocuments({ tags: tags[i]._id })
+
+		if(tags[i].postCount > 0)
+			await tags[i].save()
+		else
+			await Tag.findByIdAndDelete(tags[i]._id)
+	}
+}
 
 if(sslKey && sslCert)
 {
