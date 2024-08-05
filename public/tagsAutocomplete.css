@@ -50,13 +50,17 @@
 .tagsAutocompleteSelected > li, .tags > li
 {
 	color: var(--text);
-	border: 2px solid var(--accent);
+	border: 2px solid var(--background2);
 	border-radius: var(--rounding);
 	padding: 5px 7.5px;
+
+	transition: border-color 0.1s ease-in-out;
 }
 
 .tagsAutocompleteSelected > li:hover, .tags > li:hover
 {
-	background: var(--accent);
+	border-color: var(--accent);
 	cursor: pointer;
+
+	transition: border-color 0.1s ease-in-out;
 }

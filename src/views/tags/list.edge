@@ -8,7 +8,6 @@
 		<span class="postCount">({{ tag.postCount ?? 0 }})</span>
 	</a>
 	@endeach
-	<a href="/tags/new">+</a>
 </div>
 
 @endsection
@@ -26,9 +25,19 @@
 	{
 		text-decoration: none;
 		color: white;
-		background: var(--accent);
+		border: 1px solid var(--background2);
 		border-radius: var(--rounding);
 		padding: 5px 10px;
+
+		transition: border-color 0.1s ease-in-out;
+	}
+
+	.tags > a:hover, .tags > a:focus
+	{
+		opacity: 1.0;
+		border-color: var(--accent);
+
+		transition: border-color 0.1s ease-in-out;
 	}
 
 	.tags a .postCount
