@@ -5,7 +5,10 @@ const router = express.Router()
 
 router.get('/', async (req, res) =>
 {
-	let search = req.query.search ?? ''
+	let search = (req.query.search ?? '')
+					.replaceAll('(', '\\(')
+					.replaceAll(')', '\\)')
+
 	let tags = []
 	if(search != '')
 		tags = await Tag.find({ $or: [
