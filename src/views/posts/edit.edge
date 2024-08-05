@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="post vertical">
-	<button onclick="history.back()" style="width:35px;height:35px"><i class="fa-solid fa-arrow-left"></i></button>
+	<button onclick="document.location.href='/posts/{{ post._id }}'" style="width:35px;height:35px"><i class="fa-solid fa-arrow-left"></i></button>
 
 	<img class="postPreview" src="/api/posts/{{ post._id }}/img" />
 
@@ -20,7 +20,11 @@
 	<div class="horizontal">
 		<div class="postPublic">
 			<p>Public</p>
-			<input type="checkbox" checked />
+			<input type="checkbox"
+			@if(post.public)
+				checked
+			@endif
+				/>
 		</div>
 
 		<span class="horizontal" style="justify-content:right">
@@ -44,6 +48,8 @@
 						.getElementsByTagName('input')[0]
 	let description = document.getElementsByClassName('postDescription')[0]
 	let autocompleteContainer = document.getElementsByClassName('tagsAutocomplete')[0]
+
+	registerAutocomplete(autocompleteContainer, true /* allow new tags */)
 
 	window.addEventListener('load', ev =>
 	{

@@ -140,10 +140,7 @@ router.get('/', async (req, res) =>
 	let tagsRaw = req.query.tags ?? null
 
 	if(tagsRaw)
-	{
 		tagsRaw = decodeURI(tagsRaw).split(',')
-		// console.log(`Getting posts with tags: ` + JSON.stringify(tagsRaw))
-	}
 
 	let tags = []
 	for(let i = 0; i < tagsRaw?.length ?? 0; i++)
@@ -153,9 +150,16 @@ router.get('/', async (req, res) =>
 		if(tag)
 			tags.push(tag._id)
 	}
-	// console.log(`Getting posts with tags: ` + JSON.stringify(tags))
 
-	let posts = await Post.find(tags.length == 0 ? {} : { tags: { $all: tags }})
+	let query = { $or: [
+		{ public: true },
+		{ author: req.session?.userID }
+	]}
+
+	if(tags.length > 0)
+		query.$and = [{ tags: { $all: tags } }]
+
+	let posts = await Post.find(query)
 	return res.json(posts)
 })
 
