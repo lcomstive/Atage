@@ -6,9 +6,13 @@ const path = require('path')
 const fs = require('fs')
 const sharp = require('sharp')
 
+const ffmpeg = require('fluent-ffmpeg')
+ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path)
+
 const router = express.Router()
 
 const ThumbnailExtension = '_thumbnail.webp'
+const VideoExtensions = [ '.mp4', '.mpeg4', '.ogg', '.mov', '.mkv' ]
 const PostMediaDirectory = path.join(__dirname, '../../../user-content')
 
 updateTagPostCount = async (tagID) =>
@@ -66,14 +70,37 @@ router.post('/new', auth, async (req, res) =>
 		post.filepath = `${req.session.userID}/${post._id}${extension}`
 		let mediaOutput = `${PostMediaDirectory}/${post.filepath}`
 
+		let isVideo = VideoExtensions.includes(extension)
+
 		await req.files.media[i].mv(mediaOutput)
 			.then(() =>
 			{
 				// Generate thumbnail
-				sharp(mediaOutput)
-					.resize(400 /* width, px */)
-					.toFile(`${mediaOutput}${ThumbnailExtension}`)
-					.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
+				if(isVideo)
+				{
+					// Generate thumbnail from first second of video.
+					// Generates a .jpg, used temporarily before converting to .webp using sharp
+					ffmpeg({ source: mediaOutput })
+						.seekInput(1)
+						.frames(1)
+						.output(`${mediaOutput}_thumbnail.jpg`)
+						.on('error', err => console.log(`Failed to generate thumbnail for '${mediaOutput}`, err))
+						.on('end', () =>
+						{
+							// Convert jpg thumbnail to webp
+							sharp(`${mediaOutput}_thumbnail.jpg`)
+								.resize(400 /* width, px */)
+								.toFile(`${mediaOutput}${ThumbnailExtension}`)
+								.then(() => fs.unlinkSync(`${mediaOutput}_thumbnail.jpg`)) // Delete temp thumbnail
+								.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
+						})
+						.run()
+				}
+				else
+					sharp(mediaOutput)
+						.resize(400 /* width, px */)
+						.toFile(`${mediaOutput}${ThumbnailExtension}`)
+						.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
 			})
 			.catch(err => console.error(`Failed to create file '${mediaOutput}'`, err))
 		
@@ -135,7 +162,13 @@ router.delete('/:id', auth, async (req, res) =>
 	
 	let tags = [...post.tags] // Shallow copy
 
+	if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}`))
+		fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}`)
+	if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`))
+		fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`)
+
 	await Post.findByIdAndDelete(req.params.id)
+
 
 	for(let i = 0; i < tags.length; i++)
 		updateTagPostCount(tags[i])

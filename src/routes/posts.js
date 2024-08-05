@@ -18,7 +18,9 @@ const postMediaFilters = [
 	'.mp4',
 	'.mpeg4',
 	'.webm',
-	'.ogg'
+	'.ogg',
+	'.mov',
+	'.mkv'
 ].join(', ')
 console.log(`Media filters: ${postMediaFilters}`)
 

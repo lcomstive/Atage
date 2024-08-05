@@ -22,7 +22,7 @@
 	<div id="postsContainer">
 		<template id="postTemplate">
 			<div class="post">
-				<img class="postPreview" src="#" />
+				<div class="postPreview"></div>
 
 				@!component('components/tagsAutocomplete.edge', { addButton: true })
 			
@@ -54,6 +54,14 @@
 	let postTemplate = document.getElementById('postTemplate')
 	let progressBar = document.getElementsByClassName('progressBar')[0]
 
+	const VideoExtensions = [
+		'mp4',
+		'mpeg4',
+		'mov',
+		'ogg',
+		'webm'
+	]
+
 	let posts = []
 
 	createBtn.style.display = 'none'
@@ -68,8 +76,23 @@
 			postsContainer.appendChild(post)
 			post = postsContainer.lastElementChild
 
-			// Set preview image
-			post.getElementsByTagName('img')[0].src = URL.createObjectURL(filesEl.files[i])
+			// Set preview media
+			let filename = filesEl.files[i].name
+			let postPreview = post.getElementsByClassName('postPreview')[0]
+			let previewExt = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase()
+			if(VideoExtensions.includes(previewExt))
+			{
+				let video = document.createElement('video')
+				video.src = URL.createObjectURL(filesEl.files[i])
+				video.controls = true
+				postPreview.appendChild(video)
+			}
+			else
+			{
+				let img = document.createElement('img')
+				img.src = URL.createObjectURL(filesEl.files[i])
+				postPreview.appendChild(img)
+			}
 
 			// Set up tag autocomplete
 			let autocomplete = post.getElementsByClassName('tagsAutocomplete')[0]
@@ -194,11 +217,14 @@
 		gap: 15px;
 	}
 
-	.post img
+	.postpreview { width: 100%; }
+
+	.postPreview > *
 	{
+		width: 100%;
+		height: auto;
+		max-height: 200px;
 		object-fit: contain;
-		width: auto;
-		max-height: 100px;
 	}
 
 	.postDescription
