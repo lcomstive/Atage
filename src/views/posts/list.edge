@@ -15,19 +15,12 @@
 		</button>
 	</div>
 
-	<div class="postsContainer"></div>
-	<div style="width: 100%">
-		<div class="loadingIndicator"></div>
-	</div>
+	@!component('components/postsContainer.edge')
+	@!component('components/loadingIndicator.edge')
 
-	<script src="/loadPosts.js"></script>
 	<script src="/tagsAutocomplete.js"></script>
-
 	<script>
 		let loadingIndicator = document.getElementsByClassName('loadingIndicator')[0]
-		let postsContainer = document.getElementsByClassName('postsContainer')[0]
-
-		showLoadingIcon = (show) => loadingIndicator.style.display = show ? 'block' : 'none'
 		
 		window.addEventListener('DOMContentLoaded', ev => {
 			let autocomplete = document.getElementsByClassName('tagsAutocomplete')[0]
@@ -46,8 +39,7 @@
 			addTags(autocomplete, tags)
 
 			showLoadingIcon(true)
-			loadPosts(tags, { container: postsContainer },
-				posts => showLoadingIcon(false))
+			loadPosts(tags).then(posts => showLoadingIcon(false))
 
 			autocomplete.addEventListener('tagListUpdate', ev => {
 				// Update URL params to reflect tags requested
@@ -61,8 +53,8 @@
 
 				// Get posts
 				showLoadingIcon(true)
-				loadPosts(ev.detail, { container: postsContainer },
-					posts => showLoadingIcon(false))
+				loadPosts(ev.detail)
+					.then(posts => showLoadingIcon(false))
 			})
 		})
 	</script>
@@ -106,30 +98,6 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.postsContainer
-	{
-		columns: 5 250px;
-		column-gap: 15px;
-		row-gap: 15px;
-		width: 90%;
-		margin: 0 auto;
-	}
-
-	.postsContainer > img
-	{
-		cursor: pointer;
-		margin-bottom: 10px;
-		border-radius: var(--rounding);
-		width: 100%;
-		height: auto;
-	}
-
-	.loadingIndicator
-	{
-		flex-grow: 1;
-		margin-bottom: 20px;
 	}
 </style>
 @endsection

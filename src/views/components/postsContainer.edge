@@ -1,0 +1,72 @@
+<div class="postsContainer"></div>
+
+<script>
+	/*
+	Options:
+	
+		container: 	The `div` with class 'postsContainer' attached.
+					Posts are put into this element.
+
+					Default = First element with 'postsContainer' class
+
+		append: 	Appends posts into the container.
+					If false, clears all posts and loads new ones into container.
+
+					Default = false
+
+	*/
+	loadPosts = (tags, options) => new Promise(resolve =>
+	{
+		// console.log(tags)
+		let url = '/api/posts'
+		if(tags)
+			url += encodeURI(`?tags=${tags.join(',')}`)
+
+		let container = options?.container ?? document.getElementsByClassName('postsContainer')[0]
+		if(!container)
+		{
+			console.error('No container found to load posts in to')
+			return
+		}
+
+		if(!options?.append)
+			container.innerHTML = ''
+
+		fetch(url)
+			.then(response => response.json())
+			.then(posts =>
+			{
+				for(let i = 0; i < posts.length; i++)
+				{
+					let img = document.createElement('img')
+					img.src = `/api/posts/${posts[i]._id}/thumbnail`
+					img.onclick = ev => document.location.href = `/posts/${posts[i]._id}`
+
+					container.appendChild(img)
+				}
+
+				resolve(posts)
+			})
+			.catch(err => console.error(err))
+	})
+</script>
+
+<style>
+.postsContainer
+{
+	columns: 5 250px;
+	column-gap: 15px;
+	row-gap: 15px;
+	width: 90%;
+	margin: 0 auto;
+}
+
+.postsContainer > img
+{
+	cursor: pointer;
+	margin-bottom: 10px;
+	border-radius: var(--rounding);
+	width: 100%;
+	height: auto;
+}
+</style>

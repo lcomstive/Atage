@@ -1,0 +1,47 @@
+<div style="width: 100%">
+	<div class="loadingIndicator"></div>
+</div>	
+
+<script>
+	showLoadingIcon = (show, element = null) =>
+	{
+		if(!element)
+			element = document.getElementsByClassName('loadingIndicator')[0]
+		if(!element)
+		{
+			console.error('showLoadingIcon(...) called but found no loading indicator in page')
+			return
+		}
+
+		element.style.display = show ? 'block' : 'none'
+	}
+</script>
+
+<style>
+/* From https://css-loaders.com/line/ */
+.loadingIndicator
+{
+	width: 35px;
+	height: 35px;
+	flex-grow: 1;
+	margin: 0 auto;
+	margin-bottom: 20px;
+	aspect-ratio: 1;
+	--c1:linear-gradient(90deg,#0000 calc(100%/3),var(--accent) 0 calc(2*100%/3),#0000 0);
+	--c2:linear-gradient( 0deg,#0000 calc(100%/3),var(--accent) 0 calc(2*100%/3),#0000 0);
+	background: var(--c1),var(--c2),var(--c1),var(--c2);
+	background-size: 300% 4px,4px 300%;
+	background-repeat: no-repeat;
+	animation: loading-indicator 1s infinite linear;
+}
+  
+@keyframes loading-indicator
+{
+	0%   {background-position: 50%  0,100% 100%,0    100%,0 0}
+	25%  {background-position: 0    0,100% 50% ,0    100%,0 0}
+	50%  {background-position: 0    0,100% 0   ,50%  100%,0 0}
+	75%  {background-position: 0    0,100% 0   ,100% 100%,0 50%}
+    75.01%{background-position: 100% 0,100% 0   ,100% 100%,0 50%}
+	100% {background-position: 50%  0,100% 0   ,100% 100%,0 100%}
+}
+</style>

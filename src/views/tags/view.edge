@@ -10,10 +10,23 @@
 		@if(user.moderator)
 			<button onclick="document.location.href = '/tags/{{ tag.name }}/edit'"><i class="fa-solid fa-pen-to-square"></i></button>
 		@else
-			<span style="width:35px;height:35px" />
+			<span style="width:35px;height:35px"></span>
 		@endif
 	</div>
+
+	@!component('components/postsContainer.edge')
+	@!component('components/loadingIndicator.edge')
+
 </div>
+
+<script>
+	window.addEventListener('DOMContentLoaded', ev => {
+		showLoadingIcon(true)
+	
+		loadPosts([ '{{ tag.name }}' ])
+			.then(posts => showLoadingIcon(false))
+	})
+</script>
 @endsection
 
 @section('styles')
