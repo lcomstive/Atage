@@ -10,7 +10,11 @@
 		@endif
 	</div>
 
-	<img async src="/api/posts/{{ post._id }}/img" decoding="async" />
+	@if(!post.isVideo)
+		<img async src="/api/posts/{{ post._id }}/img" decoding="async" />
+	@else
+		<video src="/api/posts/{{ post._id }}/img" controls></video>
+	@endif
 
 	<div class="centerContent">
 		<ul class="tags">

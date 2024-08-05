@@ -5,14 +5,13 @@ const auth = require('../../middleware/auth')
 const path = require('path')
 const fs = require('fs')
 const sharp = require('sharp')
+const { ThumbnailExtension, VideoExtensions } = require('../../fileExtensions')
 
 const ffmpeg = require('fluent-ffmpeg')
 ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path)
 
 const router = express.Router()
 
-const ThumbnailExtension = '_thumbnail.webp'
-const VideoExtensions = [ '.mp4', '.mpeg4', '.ogg', '.mov', '.mkv' ]
 const PostMediaDirectory = path.join(__dirname, '../../../user-content')
 
 updateTagPostCount = async (tagID) =>

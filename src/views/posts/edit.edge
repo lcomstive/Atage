@@ -4,7 +4,11 @@
 <div class="post vertical">
 	<button onclick="document.location.href='/posts/{{ post._id }}'" style="width:35px;height:35px"><i class="fa-solid fa-arrow-left"></i></button>
 
-	<img class="postPreview" src="/api/posts/{{ post._id }}/img" />
+	@if(!post.isVideo)
+		<img class="postPreview" src="/api/posts/{{ post._id }}/img">
+	@else
+		<video controls class="postPreview" src="/api/posts/{{ post._id }}/img"></video>
+	@endif
 
 	@!component('components/tagsAutocomplete.edge', { addButton: true })
 

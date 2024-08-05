@@ -5,29 +5,14 @@ const User = require('../models/user')
 
 const router = express.Router()
 const auth = require('../middleware/auth')
+const { PostMediaFilters, VideoExtensions } = require('../fileExtensions')
 
-const postMediaFilters = [
-	// Images
-	'.png',
-	'.jpg',
-	'.jpeg',
-	'.webp',
-	'.gif',
-
-	// Video
-	'.mp4',
-	'.mpeg4',
-	'.webm',
-	'.ogg',
-	'.mov',
-	'.mkv'
-].join(', ')
-console.log(`Media filters: ${postMediaFilters}`)
+console.log(`Media filters: ${PostMediaFilters}`)
 
 router.get('/', async (req, res) => res.render('posts/list', { user: req.session?.user }))
 
 router.get('/new', auth, async (req, res) =>
-	res.render('posts/new', { postMediaFilters, user: req.session?.user }))
+	res.render('posts/new', { PostMediaFilters, user: req.session?.user }))
 
 router.get('/:id/edit', auth, async (req, res, next) =>
 {
@@ -44,6 +29,9 @@ router.get('/:id/edit', auth, async (req, res, next) =>
 		if(tag)
 			post.tagsNamed.push(tag.name)
 	}
+
+	let ext = post.filepath.substring(post.filepath.lastIndexOf('.'))
+	post.isVideo = VideoExtensions.includes(ext)
 
 	res.render('posts/edit', { post, user: req.session?.user })
 })
@@ -68,6 +56,9 @@ router.get('/:id', async (req, res, next) =>
 		}
 
 		post.isAuthor = post.author == req.session?.userID
+
+		let ext = post.filepath.substring(post.filepath.lastIndexOf('.'))
+		post.isVideo = VideoExtensions.includes(ext)
 
 		res.render('posts/view', { post, user: req.session?.user })
 	}
