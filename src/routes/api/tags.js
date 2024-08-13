@@ -22,9 +22,13 @@ router.get('/', async (req, res) =>
 
 router.get('/:id', async (req, res) =>
 {
-	let tag = await Tag.findById(req.params.id)
-	if(tag != null)
-		return res.status(200).json(tag)
+	try
+	{
+		let tag = await Tag.findById(req.params.id)
+		if(tag != null)
+			return res.status(200).json(tag)
+	}
+	catch {}
 	return res.status(404).json({ error: 'Tag does not exist' })
 })
 
