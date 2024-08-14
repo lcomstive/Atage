@@ -71,6 +71,14 @@ router.post('/api/login', async (req, res) =>
 router.get('/api/logout', (req, res) =>
 {
 	req.session?.destroy()
+	res.json({ success: true })
+})
+
+router.get('/api/session', (req, res) =>
+{
+	if(!req.session?.user)
+		return res.status(403).json({ error: 'Not logged in' })
+	return res.json(req.session.user)
 })
 
 module.exports = router
