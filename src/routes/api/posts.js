@@ -1,6 +1,7 @@
 const express = require('express')
 const Post = require('../../models/post')
 const Tag = require('../../models/tag')
+const User = require('../../models/user')
 const auth = require('../../middleware/auth')
 const path = require('path')
 const fs = require('fs')
@@ -13,6 +14,33 @@ ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path)
 const router = express.Router()
 
 const PostMediaDirectory = path.join(__dirname, '../../../user-content')
+
+addPostMeta = async (post, req) =>
+{
+	// Deep copy of results so we don't modify original
+	post = JSON.parse(JSON.stringify(post))
+
+	let author = await User.findById(post.author)
+	post.authorName = author.username
+
+	post.tagData = []
+	for(let i = 0; i < post.tags.length; i++)
+	{
+		let tag = await Tag.findById(post.tags[i])
+		if(tag)
+			post.tagData.push({
+				name: tag.name,
+				postCount: tag.postCount
+			})
+	}
+
+	post.isAuthor = post.author == req.session?.userID
+
+	let ext = post.filepath.substring(post.filepath.lastIndexOf('.'))
+	post.isVideo = VideoExtensions.includes(ext)
+
+	return post
+}
 
 updateTagPostCount = async (tagID) =>
 {
@@ -146,11 +174,19 @@ router.post('/:id/update', async (req, res) =>
 // Get post
 router.get('/:id', async (req, res) =>
 {
-	let post = await Post.findById(req.params.id)
-	if(!post.public && post.author != req.session?.userID)
-		return res.status(403).send({ error: 'Not authorised' })
+    try 
+    {
+	    let post = await Post.findById(req.params.id)
+    	if(!post)
+	    	return res.status(404).json({ error: 'Post not found' })
 
-	return res.status(200).json(post)
+	    if(!post.public && post.author != req.session?.userID)
+		    return res.status(403).send({ error: 'Not authorised' })
+
+    	post = await addPostMeta(post, req)
+	    return res.status(200).json(post)
+    }
+    catch(err) { return res.status(500).json({ error: err.message }) }
 })
 
 router.delete('/:id', auth, async (req, res) =>
@@ -215,7 +251,10 @@ router.get('/', async (req, res) =>
 	if(tags.length > 0)
 		query.$and = [{ tags: { $all: tags } }]
 
-	let posts = await Post.find(query)
+	let posts = await Post.find(query);
+	for(let i = 0; i < posts.length; i++)
+		posts[i] = await addPostMeta(posts[i], req)
+
 	return res.json(posts)
 })
 
