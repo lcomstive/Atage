@@ -36,8 +36,6 @@ router.post('/api/register', async (req, res) =>
 router.post('/api/login', async (req, res) =>
 {
 	const { username, password } = req.body
-
-	console.log(`Trying to log in '${username}'`)
 	
 	if(username == '')
 		return res.json({ error: 'Username empty' })
