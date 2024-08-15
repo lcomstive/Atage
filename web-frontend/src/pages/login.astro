@@ -2,17 +2,15 @@
 import Layout from '../layouts/Layout.astro';
 import Vertical from '../components/Vertical.astro';
 
-
-const pageTitle = 'Login'
-
+const pageTitle = 'Login';
 ---
 
 <Layout title={pageTitle}>
 	<Vertical class='loginPage'>
 		<h1>{pageTitle}</h1>
 
-		<input placeholder="Username" id="inputUsername" />
-		<input placeholder="Password" type="password" id="inputPassword" />
+		<input placeholder="Username" id="inputUsername" autocomplete="username" />
+		<input placeholder="Password" type="password" id="inputPassword" autocomplete="current-password" />
 		<button id="btnLogin" class="accent">Login</button>
 		<p class="errorText" style="opacity: 0">Error goes here :)</p>
 		<p class="registerLink">Don't have an account? <a href="/register">Register</a></p>
@@ -51,10 +49,16 @@ const pageTitle = 'Login'
 		});
 	}
 
+	let errorTimeout = null;
 	function showError(message) {
+		if(errorTimeout)
+			clearTimeout(errorTimeout);
+
 		let errorText = document.getElementsByClassName('errorText')[0];
 		errorText.innerHTML = message;
-		errorText.style.opacity = '1.0';
+		errorText.style.opacity = '1';
+
+		errorTimeout = setTimeout(() => errorText.style.opacity = '0', 5000);
 	}
 
 	function setup() {
@@ -83,6 +87,7 @@ const pageTitle = 'Login'
 	.loginPage .registerLink a:hover { opacity: 0.8; }
 
 	.errorText {
+		cursor: default;
 		color: rgb(var(--error));
 		transition: 0.15s ease-in-out;
 	}

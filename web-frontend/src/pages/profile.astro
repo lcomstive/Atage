@@ -29,5 +29,10 @@ const title = 'Profile';
 			.catch(err => console.error(err));
 	}
 
-	document.getElementById('btnLogout')?.addEventListener('click', logout);
+	function setup() {
+		document.getElementById('btnLogout')?.addEventListener('click', logout);
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
 </script>

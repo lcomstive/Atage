@@ -2,20 +2,77 @@
 import Layout from '../layouts/Layout.astro';
 import Vertical from '../components/Vertical.astro';
 
-const pageTitle = 'Register'
+const pageTitle = 'Register';
 ---
 
 <Layout title={pageTitle}>
 	<Vertical class='registerPage'>
 		<h1>{pageTitle}</h1>
 
-		<input placeholder="Username" />
-		<input placeholder="Password" type="password" />
-		<input placeholder="Confirm password" type="password" />
-		<button class="accent">Register</button>
+		<input placeholder="Username" id="inputUsername" autocomplete="username" />
+		<input placeholder="Password" id="inputPassword" type="password" autocomplete="new-password" />
+		<input placeholder="Confirm password" id="inputPasswordConfirm" type="password" autocomplete="new-password" />
+		<button class="accent" id="btnRegister">Register</button>
+		<p class="errorText" style="opacity: 0">Error goes here :)</p>
 		<p class="loginLink">Already have an account? <a href="/login">Login</a></p>
 	</Vertical>
 </Layout>
+
+<script>
+	import { navigate } from "astro:transitions/client";
+
+	async function attemptRegister() {
+		let username = document.getElementById('inputUsername').value;
+		let password = document.getElementById('inputPassword').value;
+		let passwordConfirm = document.getElementById('inputPasswordConfirm').value;
+
+		if(username == '' || password == '')
+			return;
+
+		if(password != passwordConfirm) {
+			showError('Passwords do not match');
+			return;
+		}
+
+		fetch('/api/register', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ username, password })
+		})
+		.then(response => response.json())
+		.then(json => {
+			if(!json.success) {
+				console.log(`Failed to register account`, json.error);
+				showError(json.error);
+			}
+			else
+				navigate('/');
+		})
+		.catch(err => {
+			console.error('Failed to register account', err);
+			showError(err.message);
+		})
+	}
+
+	let errorTimeout = null;
+	function showError(message) {
+		if(errorTimeout)
+			clearTimeout(errorTimeout);
+
+		let errorText = document.getElementsByClassName('errorText')[0];
+		errorText.innerHTML = message;
+		errorText.style.opacity = '1';
+
+		errorTimeout = setTimeout(() => errorText.style.opacity = '0', 5000);
+	}
+
+	function setup() {
+		document.getElementById('btnRegister')?.addEventListener('click', attemptRegister);
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>
 
 <style is:global>
 	h1 {
@@ -27,6 +84,16 @@ const pageTitle = 'Register'
 		margin: 0 auto;
 	}
 
-	.registerPage .loginLink { text-align: center; font-size: 0.9em; }
+	.registerPage .loginLink, .errorText {
+		text-align: center;
+		font-size: 0.9em;
+		margin: 0;
+	}
 	.registerPage .loginLink a:hover { opacity: 0.8; }
+
+	.errorText {
+		cursor: default;
+		color: rgb(var(--error));
+		transition: 0.15s ease-in-out;
+	}
 </style>
