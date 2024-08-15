@@ -114,6 +114,10 @@ if(basePathname == '')
 
 	setup();
 	document.addEventListener('astro:after-swap', setup);
+	document.addEventListener('astro:before-preparation', () => {
+		if(document.body.clientWidth < 450) // Detect mobile
+			setMenuState(false); // Close on page load
+	})
 	document.addEventListener('astro:page-load', () => menu.classList.remove('preventTransition'));
 </script>
 
@@ -159,7 +163,7 @@ if(basePathname == '')
 		flex-grow: 1;
 		margin: 10px;
 		padding: 20px;
-		height: 100dvh;
+		height: calc(100dvh - 60px);
 		overflow-y: auto;
 
 		border-radius: var(--rounding);
