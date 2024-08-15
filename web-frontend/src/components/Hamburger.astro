@@ -300,11 +300,14 @@ if(basePathname == '')
 	/* Mobile */
 	@media screen and (max-width: 450px) {
 		.hamburgerMenu {
-			width: calc(100vw - 40px) !important;
+			width: calc(100dvw - 40px) !important;
 			height: calc(100dvh - 40px);
 			z-index: 100;
-			padding: 10px 20px;
+			padding: 10px;
+			transition: height 0.15s ease-in-out;
 		}
+
+		.hamburgerMenu .title { padding-top: 0; }
 
 		.hamburgerMenu.collapsed {
 			height: 30px;
