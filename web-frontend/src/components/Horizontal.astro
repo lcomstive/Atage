@@ -1,7 +1,8 @@
 ---
+const { ...attrs } = Astro.props;
 ---
 
-<div class="horizontal">
+<div class="horizontal" {...attrs} >
 	<slot />
 </div>
 

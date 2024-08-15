@@ -41,7 +41,7 @@ const session = await getSession(Astro.request);
 		width: 100%;
 		padding-top: 10px;
 		padding-right: 10px;
-		height: 100vh;
+		height: 100%;
 		overflow-y: auto;
 	}
 
@@ -52,7 +52,7 @@ const session = await getSession(Astro.request);
 		.layoutContent {
 			padding: 10px;
 			width: unset !important;
-			height: calc(100vh - 92px) !important;
+			height: calc(100dvh - 75px) !important;
 		}
 	}
 </style>
