@@ -152,8 +152,8 @@ if(basePathname == '')
 
 	.collapsed .themeColours :global(.horizontal) { background: none; }
 	.collapsed .themeColours div p { display: none; }
-	.collapsed .themeColours div :first-child { margin: 0 -12px; }
-	.collapsed .themeColours div :not(:first-child) { display: none; }
+	.collapsed .themeColours div .horizontal :first-child { margin: 0 -12px; }
+	.collapsed .themeColours div .horizontal :not(:first-child) { display: none; }
 	/* [/Temp] */
 
 	.hamburgerMenu {
@@ -314,4 +314,17 @@ if(basePathname == '')
 		
 		.collapsed :not(.title) { display: none; }
 		.collapsed .themeAndLogin { display: none; }
+	}
+
+	@media screen and (min-height: 451px) and (max-height: 750px) {
+		.themeColours { flex-direction: row; }
+		.themeColours :global(.horizontal) { background: none; }
+		.themeColours div { flex-grow: 1; }
+		.themeColours div p { display: none; }
+		.themeColours div .horizontal :not(:first-child) { display: none; }
+	}
+
+	@media screen and (max-height: 450px) {
+		.themeColours { display: none; }
+	}
 </style>
