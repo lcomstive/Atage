@@ -1,0 +1,89 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Vertical from '../components/Vertical.astro';
+
+
+const pageTitle = 'Login'
+
+---
+
+<Layout title={pageTitle}>
+	<Vertical class='loginPage'>
+		<h1>{pageTitle}</h1>
+
+		<input placeholder="Username" id="inputUsername" />
+		<input placeholder="Password" type="password" id="inputPassword" />
+		<button id="btnLogin" class="accent">Login</button>
+		<p class="errorText" style="opacity: 0">Error goes here :)</p>
+		<p class="registerLink">Don't have an account? <a href="/register">Register</a></p>
+	</Vertical>
+</Layout>
+
+<script>
+	import { navigate } from "astro:transitions/client";
+
+	async function attemptLogin() {
+		let username = document.getElementById('inputUsername').value;
+		let password = document.getElementById('inputPassword').value;
+
+		if(username == '' || password == '')
+			return;
+
+		fetch('/api/login', {
+			method: 'POST',
+			credentials: 'include',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ username, password })
+		})
+		.then(response => response.json())
+		.then(json => {
+			if(!json.success)
+			{
+				console.log(`Failed to log in: ${json.error}`);
+				showError(json.error);
+			}
+			else
+				navigate('/');
+		})
+		.catch(err => {
+			console.error('Failed to log in', err);
+			showError(err.message);
+		});
+	}
+
+	function showError(message) {
+		let errorText = document.getElementsByClassName('errorText')[0];
+		errorText.innerHTML = message;
+		errorText.style.opacity = '1.0';
+	}
+
+	function setup() {
+		document.getElementById('btnLogin')?.addEventListener('click', attemptLogin);
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>
+
+<style is:global>
+	h1 {
+		text-align: center;
+	}
+
+	.loginPage {
+		max-width: 400px;
+		margin: 0 auto;
+	}
+
+	.loginPage .registerLink, .errorText {
+		text-align: center;
+		margin: 0;
+		font-size: 0.9em;
+	}
+	.loginPage .registerLink a:hover { opacity: 0.8; }
+
+	.errorText {
+		color: rgb(var(--error));
+		transition: 0.15s ease-in-out;
+	}
+</style>

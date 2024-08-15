@@ -1,0 +1,136 @@
+---
+import { Icon } from 'astro-icon/components';
+import Layout from '../../layouts/Layout.astro';
+import { fetchAuth } from '../../scripts/Authenticate'
+import Vertical from '../../components/Vertical.astro';
+import TagsInput from '../../components/TagsInput.astro';
+
+let apiURL = `${Astro.url.origin}/api/posts`
+if(Astro.url.searchParams.has('tags'))
+	apiURL += `?tags=${Astro.url.searchParams.get('tags')}`
+
+const response = await fetchAuth(apiURL, Astro.request);
+const posts = await response.json();
+---
+
+<Layout title='Posts'>
+	<Vertical>
+		<h1 style="text-align: center;">Posts</h1>
+		<TagsInput transition:persist />
+		<div class="postsContainer">
+			{posts.map(post => (
+				<a href={`/posts/${post._id}`} class="hide">
+					<img src={`/api/posts/${post._id}/thumbnail`} />
+					{ post.isVideo && <Icon name={'mingcute:video-fill'} class={'videoIcon'} /> }
+				</a>
+			))}
+			{posts.length > 0 && <div />} <!-- Additional div to reduce stretching on last row -->
+		</div>
+	</Vertical>
+</Layout>
+
+<script src="../../components/TagsInput.js"></script>
+<script>
+	import { TagInput } from "../../components/TagsInput";
+	import { navigate } from "astro:transitions/client";
+		
+	function onTagsChanged(ev) {
+		// Navigate to new URL with tags
+		const url = new URL(window.location.href);
+		if(ev.detail?.length > 0)
+			url.searchParams.set('tags', ev.detail);
+		else
+			url.searchParams.delete('tags');
+
+		navigate(url.toString());
+	}
+
+	function setup() {
+		let tagInputEl = document.getElementsByClassName('tagsInput')[0]
+		if(!tagInputEl)
+			return;
+
+		// Get search tags from URL
+		let tags = new URLSearchParams(window.location.search).get('tags')?.split(',') ?? [];
+		let tagInput = new TagInput(tagInputEl);
+		tagInput.addTags(tags);
+
+		// Response to tag change events
+		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
+		
+		// Remove the 'hide' class from posts, to fade them in
+		let postsContainer = document.getElementsByClassName('postsContainer')[0];
+		for(let i = 0; i < postsContainer.childElementCount; i++)
+			postsContainer.children[i].classList.remove('hide');
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>
+
+<style is:inline>
+	.postsContainer {
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		padding-bottom: 20px;
+	}
+
+	.postsContainer > a {
+		position: relative;
+		height: 300px;
+		flex-grow: 1;
+		transition: opacity 0.1s ease-in-out;
+	}
+	
+	.postsContainer img {
+		cursor: pointer;
+		min-width: 100%;
+		max-height: 100%;
+		object-fit: cover;
+		vertical-align: bottom;
+		border-radius: var(--rounding);
+
+		transition: opacity 0.2s ease-in-out;
+	}
+
+	.postsContainer .hide img { opacity: 0; }
+
+	.videoIcon {
+		position: absolute;
+		top: 5px; left: 5px;
+		width: 35px;
+		height: 35px;
+
+		padding: 5px;
+		opacity: 0.6;
+		border-radius: var(--rounding);
+		
+		color: rgba(var(--accent));
+		background: rgba(var(--secondary));
+		border: 1.5px solid rgba(var(--accent));
+	}
+
+	.dark .videoIcon {
+		color: white;
+		border-color: rgba(var(--secondary));
+		background: rgba(var(--secondary), 0.5);
+	}
+
+	@media screen and (max-aspect-ratio: 1/1) {
+		.postsContainer > a {
+			height: 200px;
+		}
+	}
+
+	/* Mobile */
+	@media screen and (max-width: 450px) {
+		.postsContainer > a {
+			width: 100%;
+			height: auto;
+			display: flex;
+			justify-content: center;
+		}
+	}
+</style>

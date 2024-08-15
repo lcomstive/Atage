@@ -1,0 +1,58 @@
+---
+import '../style.css';
+import '@fontsource/poppins';
+import { ViewTransitions } from 'astro:transitions';
+import Vertical from '../components/Vertical.astro';
+import Hamburger from '../components/Hamburger.astro';
+import { getSession } from '../scripts/Authenticate';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+const session = await getSession(Astro.request);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Astro description" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Atage - {title}</title>
+		<ViewTransitions />
+	</head>
+	<body data-username={session?.username}>
+		<Vertical>
+			<Hamburger transition:persist />
+		</Vertical>
+
+		<div class="layoutContent" transition:animate="fade">
+			<slot />
+		</div>
+	</body>
+</html>
+
+<style is:global>
+	div.layoutContent {
+		width: 100%;
+		padding-top: 10px;
+		padding-right: 10px;
+		height: 100vh;
+		overflow-y: auto;
+	}
+
+	/* Mobile */
+	@media screen and (max-width: 450px) {
+		body { flex-direction: column; }
+
+		.layoutContent {
+			padding: 10px;
+			width: unset !important;
+			height: calc(100vh - 92px) !important;
+		}
+	}
+</style>

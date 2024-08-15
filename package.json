@@ -4,7 +4,9 @@
   "description": "Tag-based gallery system",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon ."
+    "dev": "nodemon .",
+	"web:dev": "npm --prefix web-frontend run dev",
+	"web:build": "npm --prefix web-frontend run build"
   },
   "author": "",
   "license": "ISC",

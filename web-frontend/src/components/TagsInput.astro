@@ -1,0 +1,128 @@
+---
+import Tag from './Tag.astro';
+import { Icon } from 'astro-icon/components';
+import Horizontal from './Horizontal.astro';
+
+interface Props {
+	addButton?: Boolean
+}
+
+const { addButton } = Astro.props;
+---
+
+<div class="tagsInput">
+	<Horizontal>
+		<input placeholder="Tags" />
+
+		{addButton && <Icon name="mingcute:arrow-right-circle-fill" class="tagsAdd" />}
+	</Horizontal>
+	<ul class="tagsInputResults"></ul> <!-- Autocomplete results -->
+	<div class="tagsInputSelected"><Tag name="Test" /></div> <!-- Selected tags -->
+</div>
+
+<script src="./TagsInput.js"></script>
+
+<style is:global>
+	.tagsInput {
+		position: relative;
+		display: inline-block;
+	}
+
+	.tagsInput .horizontal {
+		position: relative;
+	}
+
+	.tagsInput input {
+		width: 100%;
+	}
+
+	.tagsInput svg {
+		position: absolute;
+		right: 5px;
+		top: 5px;
+		cursor: pointer;
+		width: auto;
+		height: 25px;
+		color: rgba(var(--accent));
+		opacity: 0.7;
+
+		transition: 0.1s ease-in-out;
+	}
+
+	.dark .tagsInput svg { color: rgb(var(--text)); }
+
+	.tagsInput svg:hover {
+		opacity: 1;
+		transition: 0.1s ease-in-out;
+	}
+
+	.tagsInputResults {
+		z-index: 10;
+		top: 37.5px;
+		left: 0; right: 0;
+		position: absolute;
+		
+		margin: 0;
+		padding: 0;
+		max-height: 200px;
+		overflow-y: auto;
+		list-style: none;
+
+		background: rgba(var(--background), 1);
+
+		border: 1px solid rgb(var(--secondary));
+		border-radius: var(--rounding);
+	}
+
+	.tagsInputResults > li {
+		padding: 2.5px 10px;
+		position: relative;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		color: rgb(var(--primary));
+		cursor: pointer;
+	}
+
+	.dark .tagsInputResults > li { color: rgba(var(--text), 0.85); }
+
+	.tagsInputResults > li > p {
+		margin: 0;
+	}
+
+	.tagsInputResults .postCount {
+		text-align: right;
+		font-family: monospace;
+		font-size: 20px;
+		color: rgba(var(--accent), 0.75);
+	}
+	.dark .tagsInputResults .postCount { color: rgba(var(--text), 0.5); }
+
+	.tagsInputResults > li:not(:last-child)::after {
+		position: absolute;
+		background: rgba(var(--primary), 0.2);
+		bottom: 0px;
+		height: 1px;
+		left: 5%; right: 5%;
+		content: "";
+	}
+
+	.dark .tagsInputResults > li:not(:last-child)::after {
+		background: rgba(var(--secondary), 0.5);
+	}
+
+	.tagsInputResults > li:hover, .tagsInputResults > li.highlight {
+		background: rgba(var(--secondary), 0.75);
+	}
+
+	.tagsInputSelected {
+		display: flex;
+		flex-wrap: wrap;
+		flex-direction: row;
+		justify-content:left;
+		
+		gap: 10px;
+		padding: 0;
+		margin-top: 10px;
+	}
+</style>

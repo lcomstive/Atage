@@ -1,0 +1,312 @@
+---
+import Horizontal from "./Horizontal.astro";
+import Space from "./Space.astro";
+import ThemeIcon from "./ThemeIcon.astro";
+import { Icon } from "astro-icon/components";
+import Auth from "./Auth.astro";
+
+const colours = [
+	'accent',
+	'primary',
+	'secondary',
+	'error'
+]
+
+const navLinks = [
+	{
+		icon: 'mingcute:home-2-fill',
+		name: 'Home',
+		link: '/'
+	},
+	{
+		icon: 'mingcute:information-fill',
+		name: 'About',
+		link: '/about'
+	},
+	{
+		icon: 'mingcute:photo-album-fill',
+		name: 'Posts',
+		link: '/posts'
+	},
+]
+
+let pathname = new URL(Astro.request.url).pathname;
+let basePathname = pathname.substring(0, pathname.lastIndexOf('/'));
+if(basePathname == '')
+	basePathname = pathname;
+---
+
+<div class="hamburgerMenu secondary lighter collapsed preventTransition">
+	<div class="title">
+		<h3>Atage</h3>
+		<Icon name="mingcute:square-arrow-left-line" class="toggle" />
+	</div>
+
+	<div class="navlinks">
+		{navLinks.map(x => (
+			<a
+				href={pathname == x.link ? '#' : x.link}
+				class={basePathname == x.link ? 'selected' : ''}
+				>
+				<Icon name={x.icon} class="icon" />
+				<span class="label">{x.name}</span>
+			</a>
+		))}
+	</div>
+
+	<Space />
+
+	<div class="themeColours">
+		{colours.map(c => (
+			<div>
+				<p>{c[0].toUpperCase() + c.substring(1)}</p>
+				<Horizontal>
+					<button class={`${c}`} style="border-radius: var(--rounding)">A</button>
+					<button class={`${c} light`} style="border-radius: var(--rounding)">B</button>
+					<button class={`${c} lighter`} style="border-radius: var(--rounding)">C</button>
+					<button class={`${c} lightest`} style="border-radius: var(--rounding)">D</button>
+				</Horizontal>
+			</div>
+		))}
+	</div>
+	<br>
+
+	<div class="themeAndLogin">
+		<ThemeIcon width={40} height={40} />
+		<Icon name={'mingcute:user-4-fill'} class="loginIcon" width={40} height={40} />
+	</div>
+</div>
+
+<script>
+	import { navigate } from "astro:transitions/client";
+
+	let menu, menuToggle, loginIcon;
+	let menuOpen = localStorage?.getItem('menuState') == 'true';
+
+	function setMenuState(isOpen) {
+		menuOpen = isOpen;
+		window.localStorage.setItem('menuState', menuOpen.toString());
+
+		if(isOpen)
+			menu.classList.remove('collapsed');
+		else
+			menu.classList.add('collapsed');
+	}
+
+	function toggleMenuState() { setMenuState(!menuOpen); }
+
+	function setup() {
+		menu = document.getElementsByClassName('hamburgerMenu')[0];
+		menuToggle = menu.querySelector('.toggle');
+
+		loginIcon = document.getElementsByClassName('loginIcon')[0];
+		loginIcon.addEventListener('click', ev => {
+			const loggedIn = document.body.dataset?.username
+			if(loggedIn)
+				navigate('/profile');
+			else
+				navigate('/login');
+		});
+
+		setMenuState(menuOpen);
+		menuToggle.addEventListener('click', toggleMenuState);
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+	document.addEventListener('astro:page-load', () => menu.classList.remove('preventTransition'));
+</script>
+
+<style>
+	/* Theme colorus [Temp] */
+	.themeColours {
+		display: flex; gap: 5px; flex-direction: column;
+		margin-bottom: 20px;
+	}
+
+	.themeColours :global(.horizontal) {
+		display: flex;
+		justify-content: space-evenly;
+		height: 30px;
+		background: rgb(var(--background));
+		border-radius: var(--rounding);
+		padding: 5px;
+	}
+
+	.themeColours p { 
+		margin: 5px;
+		text-align: center;
+	}
+
+	.themeColours :global(.horizontal) button {
+		flex-grow: 1;
+		padding: 0;
+		text-align: center;
+		align-content: center;
+		border-radius: var(--rounding);
+	}
+
+	.collapsed .themeColours :global(.horizontal) { background: none; }
+	.collapsed .themeColours div p { display: none; }
+	.collapsed .themeColours div :first-child { margin: 0 -12px; }
+	.collapsed .themeColours div :not(:first-child) { display: none; }
+	/* [/Temp] */
+
+	.hamburgerMenu {
+		width: 200px;
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+		margin: 10px;
+		padding: 20px;
+		height: calc(100vh - 60px);
+		overflow-y: auto;
+
+		border-radius: var(--rounding);
+		transition: width 0.15s ease-in-out;
+	}
+	.hamburgerMenu.collapsed { overflow-y: hidden; }
+
+	/* Title */
+	.hamburgerMenu .title {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 10px;
+	}
+
+	.hamburgerMenu .title h3 {
+		margin: 0;
+	}
+
+	.hamburgerMenu .title .toggle {
+		cursor: pointer;
+		color: var(--text);
+		text-align: right;
+		opacity: 0.75;
+
+		width: 25px;
+		height: 25px;
+
+		padding: 2px 10px;
+
+		transition: background-color 0.1s ease-in-out;
+	}
+
+	.hamburgerMenu .title .toggle:hover {
+		opacity: 1.0;
+		transition: background-color 0.1s ease-in-out;
+	}
+
+	.hamburgerMenu.collapsed .title { display: flex; }
+	.hamburgerMenu.collapsed .title :not(.toggle) { display: none; }
+	.hamburgerMenu.collapsed .title .toggle {
+		margin: 0 -15px;
+		transform: rotate(180deg);
+	}
+
+	@media screen and (max-width: 450px) {
+		.hamburgerMenu .title .toggle {
+			margin: 0 -15px;
+			transform: rotate(90deg);
+		}
+		.hamburgerMenu.collapsed .title .toggle { transform: rotate(-90deg); }
+	}
+
+	/* Links */
+	.navlinks {
+		gap: 10px;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.navlinks a {
+		position: relative;
+
+		align-items: center;
+		color: rgb(var(--text));
+		text-decoration: none;
+		cursor: pointer;
+		border-radius: calc(2 * var(--rounding));
+		margin-left: -10px;
+		padding: 10px 12.5px;
+		display: flex;
+		gap: 15px;
+		opacity: 0.75;
+		border: 1px solid transparent;
+
+		transition: background-color 0.1s ease-in-out;
+	}
+
+	.navlinks a:hover, .navlinks a:focus {
+		opacity: 1;
+		background: rgba(var(--secondary), 0.3);
+	}
+
+	.navlinks a.selected {
+		opacity: 1;
+		background: rgba(var(--secondary), 0.3);
+		transition: background-color 0.1s ease-in-out;
+	}
+
+	.navlinks a > .icon { width: 24px; height: 24px; }
+
+	:global(:not(.dark)) .navlinks a.selected { border: 1px solid rgba(var(--accent), 0.2); }
+	:global(.dark) .navlinks a.selected { border: 1px solid rgba(var(--text), 0.1); }
+
+	.hamburgerMenu.collapsed .navlinks a {
+		padding: 10px 0;
+		margin: 0 -10px;
+		justify-content: center;
+	}
+
+	.hamburgerMenu.collapsed .navlinks a > :not(.icon) { display: none; }
+
+	/* Theme and login buttons */
+	.themeAndLogin {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		gap: 15px;
+	}
+
+	.themeAndLogin > * { cursor: pointer; }
+	.loginIcon:hover, :global(#themeToggle:hover) {
+		opacity: 0.6;
+	}
+
+	.collapsed .themeAndLogin {
+		margin-left: -12.5px;
+		flex-direction: column;
+		transition: all 0.1s ease-in-out;
+	}
+
+	.loginIcon { color: rgb(var(--accent)); }
+	:global(.dark) .loginIcon { color: rgb(var(--text)); }
+
+	/* Collapsed */
+	.hamburgerMenu.collapsed {
+		width: 15px;
+		padding: 20px;
+		transition: width 0.15s ease-in-out;
+	}
+
+	/* Mobile */
+	@media screen and (max-width: 450px) {
+		.hamburgerMenu {
+			width: calc(100vw - 60px) !important;
+			height: calc(100vh - 40px);
+			z-index: 100;
+			padding: 10px 20px;
+		}
+
+		.hamburgerMenu.collapsed {
+			padding: 10px 20px;
+			height: 30px;
+			transition: 0.15s ease-in-out;
+		}
+
+		.collapsed .title > * { display: block !important; }	
+		
+		.collapsed :not(.title) { display: none; }
+		.collapsed .themeAndLogin { display: none; }
+</style>

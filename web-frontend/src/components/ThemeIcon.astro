@@ -1,0 +1,66 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	width?: number,
+	height?: number
+}
+
+const { width = 40, height = 40, ...attrs } = Astro.props;
+---
+
+<div id="themeToggle" style={`width:${width}px; height:${height}px`} {...attrs}>
+	<Icon name={'mingcute:sun-line'} class={'sun'} width={width} height={height} />
+	<Icon name={'mingcute:moon-fill'} class={'moon'} width={width} height={height} />
+</div>
+
+<style>
+	#themeToggle {
+		cursor: pointer;
+		border-radius: 100%;
+		position: relative;
+
+		transition: all 0.15s ease-in-out;
+	}
+
+	#themeToggle > * {
+		position: absolute;
+		top: 0; bottom: 0;
+		left: 0; right: 0;
+	}
+
+	.sun { color: black; }
+	.moon { color: transparent; }
+
+	:global(.dark) .sun { color: transparent; }
+	:global(.dark) .moon { color: white; }
+</style>
+
+<script is:inline>
+	let theme = localStorage.getItem('theme');
+	if(!theme)
+		theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+	function setTheme(newTheme) {
+		theme = newTheme;
+		window.localStorage.setItem('theme', theme);
+
+		if(theme === 'light')
+			document.documentElement.classList.remove('dark');
+		else
+			document.documentElement.classList.add('dark');
+	}
+
+	function toggleTheme() { setTheme(theme == 'light' ? 'dark' : 'light'); }
+
+	function setup() {
+		setTheme(theme);
+		document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+		window.matchMedia('(prefers-color-scheme: dark)')
+			.addEventListener('change', ev => setTheme(ev.matches ? 'dark' : 'light'));
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>

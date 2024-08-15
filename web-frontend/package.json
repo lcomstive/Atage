@@ -1,0 +1,25 @@
+{
+  "name": "atage-web",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev --host",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.3.3",
+    "@fontsource/poppins": "^5.0.14",
+    "@iconify-json/mingcute": "^1.1.19",
+    "astro": "^4.13.2",
+    "astro-icon": "^1.1.0",
+    "atage": "file:.."
+  },
+  "overrides": {
+    "astro-icon": {
+      "@iconify/tools": "^4.0.0"
+    }
+  }
+}
