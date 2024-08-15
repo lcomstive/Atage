@@ -4,7 +4,8 @@ COPY . .
 
 # Web UI
 RUN npm --prefix web-frontend install
-RUN export API_URL=http://localhost:3000/api && npm run web:build
+ENV API_URL=http://localhost:3000/api
+RUN npm run web:build
 EXPOSE 4321
 
 # API

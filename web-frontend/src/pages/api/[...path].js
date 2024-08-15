@@ -7,6 +7,8 @@ export const GET = async ({ cookies, url, request }) => {
 		request.headers = {};
 	request.headers.cookie = `connect.sid=${cookies.get('connect.sid')?.value}`;
 
+    console.log(`[GET] ${apiPath}`);
+
 	const response = await fetch(apiPath, request);
 	return new Response(response.body);
 }

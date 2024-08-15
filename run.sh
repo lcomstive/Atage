@@ -1,12 +1,9 @@
 #!/bin/bash
 node . &
-API_PID=$!
-
-node web-frontend/dist/server/entry.mjs &
-FRONTEND_PID=$!
+HOST=0.0.0.0 node web-frontend/dist/server/entry.mjs &
 
 # Wait for either process to exit
-wait $API_PID $FRONTEND_PID
+wait -n 
 
 # Exit with status code of process that first exited
 exit $?

@@ -5,7 +5,7 @@ import { fetchAuth } from '../../scripts/Authenticate'
 import Vertical from '../../components/Vertical.astro';
 import TagsInput from '../../components/TagsInput.astro';
 
-let apiURL = `${Astro.url.origin}/api/posts`
+let apiURL = `${import.meta.env.API_URL}/posts`
 if(Astro.url.searchParams.has('tags'))
 	apiURL += `?tags=${Astro.url.searchParams.get('tags')}`
 
