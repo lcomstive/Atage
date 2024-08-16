@@ -1,20 +1,46 @@
 ---
+import { Icon } from "astro-icon/components";
 import Layout from "../layouts/Layout.astro";
-import Auth from "../components/Auth.astro";
+import Input from "../components/Input.astro";
+import Vertical from "../components/Vertical.astro";
+import { getSession } from "../scripts/Authenticate";
+import Horizontal from "../components/Horizontal.astro";
 
 const title = 'Profile';
+
+const session = await getSession(Astro.request);
+if(session == null)
+	return Astro.redirect('/login');
 ---
 
 <Layout title={title}>
 	<h1>{title}</h1>
 
-	<Auth>
-		{session => session &&
-			<p>Hey <span class="primary" style="padding: 2px 5px">{session.username}</span></p>
-		}
-	</Auth>
-
-	<button class="primary light" id="btnLogout">Logout</button>
+	<Horizontal style="justify-content: space-between">
+		<h2 style="margin: auto 0"><span style="opacity: 0.6">Hey,</span> <span style="font-weight: 600">{session.username}</span></h2>
+		<button class="primary light" id="btnLogout">Logout</button>
+	</Horizontal>
+	<Vertical style="margin-top: 30px">
+		<h4>Account Settings</h4>
+		<div class="secondary lightest card">
+			<Horizontal style="justify-content: space-between;">
+				<Vertical style="width: 45%; gap: 15px">
+					<span class="columnTitle">Details</span>
+					<div id="usernameInput">
+						<Input disabled={true} label="Username" value={session.username} />
+						<Icon name="mingcute:edit-2-fill" class="icon" />
+					</div>
+				</Vertical>
+				<Vertical style="width: 45%; gap: 15px">
+					<span class="columnTitle">Change Password</span>
+					<Input label="Existing" 	type="password" autocomplete="current-password" />
+					<Input label="New" 			type="password" autocomplete="new-password"/>
+					<Input label="Confirm" 		type="password" autocomplete="new-password"/>
+					<button id="btnUpdatePassword" class="secondary light">Update Password</button>
+				</Vertical>
+			</Horizontal>
+		</div>
+	</Vertical>
 </Layout>
 
 <script>
@@ -36,3 +62,51 @@ const title = 'Profile';
 	setup();
 	document.addEventListener('astro:after-swap', setup);
 </script>
+
+<style>
+	:global(.layoutContent) {
+		max-width: 750px;
+		margin: 0 auto;
+	}
+
+	.card {
+		padding: 1rem;
+	}
+
+	.columnTitle {
+		padding-bottom: 5px;
+		border-bottom: 1px solid rgba(var(--text), 0.1);
+		margin-bottom: 5px;
+	}
+
+	#usernameInput {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 10px;
+	}
+
+	#usernameInput :global(.customInput) {
+		flex-grow: 1;
+	}
+
+	#usernameInput .icon {
+		cursor: pointer;
+		opacity: 0.7;
+	}
+
+	#usernameInput .icon:hover {
+		opacity: 1;
+	}
+
+	@media screen and (max-width: 768px) {
+		:global(.layoutContent .horizontal) {
+			flex-direction: column !important;
+		}
+
+		:global(.layoutContent .horizontal .vertical) {
+			width: 100% !important;
+			margin-bottom: 25px;
+		}
+	}
+</style>

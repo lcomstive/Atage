@@ -6,9 +6,9 @@ const pageTitle = 'Login';
 ---
 
 <Layout title={pageTitle}>
+	<h1>{pageTitle}</h1>
+	
 	<Vertical class='loginPage'>
-		<h1>{pageTitle}</h1>
-
 		<input placeholder="Username" id="inputUsername" autocomplete="username" />
 		<input placeholder="Password" type="password" id="inputPassword" autocomplete="current-password" />
 		<button id="btnLogin" class="accent">Login</button>
@@ -70,10 +70,6 @@ const pageTitle = 'Login';
 </script>
 
 <style is:global>
-	h1 {
-		text-align: center;
-	}
-
 	.loginPage {
 		max-width: 400px;
 		margin: 0 auto;

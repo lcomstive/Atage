@@ -27,8 +27,17 @@ router.post('/api/register', async (req, res) =>
 
 		user = await User.create({
 			username,
-			password: encrypted
+			password: encrypted,
+			createdDate: new Date().toISOString()
 		})
+
+		req.session.userID = user._id
+		req.session.user = {
+			id: user._id,
+			username,
+			moderator: false
+		}
+
 		res.json({ error: '', success: true })
 	})
 })
@@ -57,7 +66,8 @@ router.post('/api/login', async (req, res) =>
 			req.session.user = {
 				id: user._id,
 				username: user.username,
-				moderator: user.moderator
+				moderator: user.moderator,
+				createdDate: user.createdDate
 			}
 			return res.json({ error: '', success: true })
 		}

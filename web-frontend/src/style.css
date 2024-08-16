@@ -1,7 +1,6 @@
 /* Colours */
 :root {
 	--rounding: 10px;
-	--gap: 10px;
 
 	--accent-gradient: linear-gradient(
 		45deg,
@@ -28,7 +27,7 @@
 
 .accent, .primary, .secondary, .error {
 	color: rgb(var(--background));
-	border: 1px solid rgba(var(--secondary), 0.5);
+	border: 1px solid rgba(var(--text), 0.1);
 	border-radius: var(--rounding);
 }
 
@@ -150,6 +149,15 @@ input:hover, input:focus {
 	transition: 0.15s ease-in-out;
 }
 
+input:disabled {
+	color: rgba(var(--text), 0.75);
+	background-color: rgba(var(--text), 0.04);
+}
+
+input:disabled:hover {
+	background: rgba(var(--text), 0.06) !important;
+}
+
 .dark input {
 	background: rgba(var(--secondary), 0.35);
 	border: 1px solid rgb(var(--secondary));
@@ -158,6 +166,10 @@ input:hover, input:focus {
 .dark input:hover, .dark input:focus {
 	background: rgba(var(--primary), 0.15);
 	border-color: rgb(var(--primary));
+}
+
+.dark input:disabled {
+	background: rgba(var(--secondary), 0.2);
 }
 
 /* Misc. */

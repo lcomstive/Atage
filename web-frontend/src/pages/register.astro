@@ -6,9 +6,9 @@ const pageTitle = 'Register';
 ---
 
 <Layout title={pageTitle}>
-	<Vertical class='registerPage'>
-		<h1>{pageTitle}</h1>
+	<h1>{pageTitle}</h1>
 
+	<Vertical class='registerPage'>
 		<input placeholder="Username" id="inputUsername" autocomplete="username" />
 		<input placeholder="Password" id="inputPassword" type="password" autocomplete="new-password" />
 		<input placeholder="Confirm password" id="inputPasswordConfirm" type="password" autocomplete="new-password" />
@@ -75,10 +75,6 @@ const pageTitle = 'Register';
 </script>
 
 <style is:global>
-	h1 {
-		text-align: center;
-	}
-
 	.registerPage {
 		max-width: 400px;
 		margin: 0 auto;

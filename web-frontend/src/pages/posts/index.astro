@@ -14,8 +14,8 @@ const posts = await response.json();
 ---
 
 <Layout title='Posts'>
+	<h1>Posts</h1>
 	<Vertical>
-		<h1 style="text-align: center;">Posts</h1>
 		<TagsInput transition:persist />
 		<div class="postsContainer">
 			{posts.map(post => (

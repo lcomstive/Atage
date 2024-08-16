@@ -1,0 +1,87 @@
+---
+interface Props {
+	label: string,
+	value?: string,
+	autocomplete?: string,
+	type?: string,
+	disabled?: boolean
+}
+
+const { label, value = '', autocomplete = '', type = 'text', disabled = false, ...attrs } = Astro.props;
+
+const inputHTML = `<input type="${type}"
+			${autocomplete && !disabled ? ('autocomplete="' + autocomplete + '"') : ''}
+			placeholder="" value="${value}"
+			${disabled ? 'disabled' : ''} />`
+---
+
+<div {...attrs} class="customInput">
+	<Fragment set:html={inputHTML}></Fragment>
+	<span class="floatingLabel">{label}</span>
+</div>
+
+<style is:global>
+.customInput {
+	position: relative;
+	font-size: 0.9em;
+}
+
+.customInput .floatingLabel {
+	position: absolute;
+	left: 15px;
+	top: 10px;
+	opacity: 0.75;
+	pointer-events: none;
+	transition: 0.15s ease-in-out;
+}
+
+.customInput input {
+	border-color: transparent;
+	width: calc(100% - 27px);
+	padding: 12.5px;
+}
+
+.customInput input:hover, .customInput input:focus { border-color: transparent; }
+
+.customInput input:focus ~ .floatingLabel,
+.customInput input:not(:placeholder-shown) ~ .floatingLabel,
+.customInput input:disabled ~ .floatingLabel {
+	top: -12.5px;
+	transition: 0.15s ease-in-out;
+	color: rgba(var(--primary), .85);
+}
+
+.customInput input:disabled ~ .floatingLabel { color: rgba(var(--text), 0.7); }
+
+.dark .customInput input:focus ~ .floatingLabel,
+.dark .customInput input:not(:placeholder-shown) ~ .floatingLabel {
+	color: rgba(var(--text), .75);
+}
+
+.customInput::before {
+	content: "";
+	position: absolute;
+	top: 0; bottom: 0;
+	left: 0; right: 0;
+	border: 1px solid rgba(var(--accent), 0.2);
+	border-radius: var(--rounding);
+	pointer-events: none;
+	
+	clip-path: polygon(0% 0%, 0% 0, 100% 0, 100% 100%, 0 100%, 0 0);
+
+	transition: all 0.15s ease-in-out;
+}
+
+.customInput:has(input:disabled)::before { border-color: rgba(var(--text), 0.1); }
+.dark .customInput:has(input:disabled)::before { border-color: rgba(var(--text), 0.05); }
+
+.dark .customInput::before { border-color: rgba(var(--secondary)); }
+.dark .customInput:has(input:focus)::before { border-color: rgb(var(--accent)); }
+
+.customInput:has(input:focus)::before,
+.customInput:has(input:not(:placeholder-shown))::before,
+.customInput:has(input:disabled)::before {
+	clip-path: polygon(0% 0%, 0% 5%, 100% 5%, 100% 100%, 0 100%, 0 0);
+	transition: all 0.15s ease-in-out;
+}
+</style>

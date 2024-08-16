@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	createdDate: { type: Date, required: true },
 	moderator: { type: Boolean, default: false }
 })
 
