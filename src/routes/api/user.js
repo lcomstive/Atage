@@ -46,7 +46,7 @@ router.post('/updateUsername', async (req, res) => {
 	let user = await User.findById(req.session.userID)
 	const { username } = req.body
 
-	if(await User.exists({ username }))
+	if(await User.exists({ username: new RegExp(`^${username}$`, 'mi') }))
 		return res.json({ error: 'Username is taken' })
 
 	user.username = username
