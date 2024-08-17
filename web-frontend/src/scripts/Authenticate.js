@@ -1,4 +1,6 @@
-import { APIAddress } from './API'
+import { APIAddress } from './API';
+
+let session = null;
 
 export async function getCookie(astroRequest) {
 	return astroRequest.headers.get('cookie');
@@ -19,13 +21,18 @@ export async function fetchAuth(url, astroRequest, options = {}) {
 	return fetch(url, options);
 }
 
-export async function getSession(req) {
-	console.log(`API Addres: ${APIAddress}`);
+export function getSession() { return session; }
+
+export async function refreshSession(req) { 
 	const response = await fetchAuth(`${APIAddress}/session`, req);
 
 	const status = response.status;
 	if(status != 200)
+	{
+		session = null;
 		return null;
+	}
 
-	return await response.json();
+	session = await response.json();
+	return session;
 }

@@ -50,7 +50,7 @@ if(session == null)
 		fetch(`/api/logout`)
 			.then(() => {
 				document.body.dataset.username = undefined;
-				navigate('/');
+				navigate('/?refreshSession');
 			})
 			.catch(err => console.error(err));
 	}
