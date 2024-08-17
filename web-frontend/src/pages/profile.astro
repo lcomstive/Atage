@@ -16,31 +16,33 @@ if(session == null)
 <Layout title={title}>
 	<h1>{title}</h1>
 
-	<Horizontal style="justify-content: space-between">
-		<h2 style="margin: auto 0"><span style="opacity: 0.6">Hey,</span> <span style="font-weight: 600">{session.username}</span></h2>
-		<button class="primary light" id="btnLogout">Logout</button>
-	</Horizontal>
-	<Vertical style="margin-top: 30px">
-		<h4>Account Settings</h4>
-		<div class="secondary lightest card">
-			<Horizontal style="justify-content: space-between;">
-				<Vertical style="width: 45%; gap: 15px">
-					<span class="columnTitle">Details</span>
-					<div id="usernameInput">
-						<Input disabled={true} label="Username" value={session.username} />
-						<Icon name="mingcute:edit-2-fill" class="icon" />
-					</div>
-				</Vertical>
-				<Vertical style="width: 45%; gap: 15px" id="changePassword">
-					<span class="columnTitle">Change Password</span>
-					<Input label="Existing" 	type="password" autocomplete="current-password" />
-					<Input label="New" 			type="password" autocomplete="new-password"/>
-					<Input label="Confirm" 		type="password" autocomplete="new-password"/>
-					<button id="btnUpdatePassword" class="secondary light">Update Password</button>
-					<span class="error light" style="text-align: center; padding: 5px; display: none">Error text</span>
-				</Vertical>
-			</Horizontal>
-		</div>
+	<Vertical>
+		<Horizontal style="justify-content: space-between">
+			<h2 style="margin: auto 0"><span style="opacity: 0.6">Hey,</span> <span style="font-weight: 600">{session.username}</span></h2>
+			<button class="primary light" id="btnLogout">Logout</button>
+		</Horizontal>
+		<Vertical style="margin-top: 30px">
+			<h4>Account Settings</h4>
+			<div class="secondary lightest card">
+				<Horizontal style="justify-content: space-between;">
+					<Vertical style="width: 45%; gap: 15px">
+						<span class="columnTitle">Details</span>
+						<div id="usernameInput">
+							<Input disabled={true} label="Username" value={session.username} />
+							<Icon name="mingcute:edit-2-fill" class="icon" />
+						</div>
+					</Vertical>
+					<Vertical style="width: 45%; gap: 15px" id="changePassword">
+						<span class="columnTitle">Change Password</span>
+						<Input label="Existing" 	type="password" autocomplete="current-password" />
+						<Input label="New" 			type="password" autocomplete="new-password"/>
+						<Input label="Confirm" 		type="password" autocomplete="new-password"/>
+						<button id="btnUpdatePassword" class="secondary light">Update Password</button>
+						<span class="error light" style="text-align: center; padding: 5px; display: none">Error text</span>
+					</Vertical>
+				</Horizontal>
+			</div>
+		</Vertical>
 	</Vertical>
 </Layout>
 
@@ -62,9 +64,13 @@ if(session == null)
 		let error = container.getElementsByClassName('error')[0];
 		let btn = container.getElementsByTagName('button')[0];
 		setError('', error);
-		if(inputs[1].value != inputs[2].value) // Check new and Confirm
-		{
+		if(inputs[1].value != inputs[2].value) { // Check new and Confirm
 			setError('Confirm and new passwords do not match', error);
+			return;
+		}
+
+		if(inputs[0].value == inputs[1].value) {
+			setError('New password hasn\'t changed', error);
 			return;
 		}
 
@@ -86,7 +92,7 @@ if(session == null)
 				inputs[i].value = '';
 
 			let bgColor = btn.style.backgroundColor;
-			btn.style.backgroundColor = 'green';
+			btn.style.backgroundColor = 'rgb(var(--success))';
 			setTimeout(() => btn.style.backgroundColor = bgColor, 1000);
 		})
 		.catch(err => {
@@ -111,7 +117,7 @@ if(session == null)
 </script>
 
 <style>
-	:global(.layoutContent) {
+	:global(.layoutContent) > .vertical {
 		max-width: 750px;
 		margin: 0 auto;
 	}

@@ -14,6 +14,7 @@
 	--secondary: 185, 184, 255;
 	--accent: 83, 77, 254;
 	--error: 255, 100, 100;
+	--success: 189, 255, 189;
 }
 
 :root.dark {
@@ -23,6 +24,7 @@
 	--secondary: 37, 37, 37;
 	--accent: 48, 33, 166;
 	--error: 255, 75, 75;
+	--success: 0, 156, 0;
 }
 
 .accent, .primary, .secondary, .error {
