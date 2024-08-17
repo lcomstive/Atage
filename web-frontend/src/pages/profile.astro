@@ -31,12 +31,13 @@ if(session == null)
 						<Icon name="mingcute:edit-2-fill" class="icon" />
 					</div>
 				</Vertical>
-				<Vertical style="width: 45%; gap: 15px">
+				<Vertical style="width: 45%; gap: 15px" id="changePassword">
 					<span class="columnTitle">Change Password</span>
 					<Input label="Existing" 	type="password" autocomplete="current-password" />
 					<Input label="New" 			type="password" autocomplete="new-password"/>
 					<Input label="Confirm" 		type="password" autocomplete="new-password"/>
 					<button id="btnUpdatePassword" class="secondary light">Update Password</button>
+					<span class="error light" style="text-align: center; padding: 5px; display: none">Error text</span>
 				</Vertical>
 			</Horizontal>
 		</div>
@@ -55,7 +56,53 @@ if(session == null)
 			.catch(err => console.error(err));
 	}
 
+	function updatePassword() {
+		let container = document.getElementById('changePassword');
+		let inputs = container.getElementsByTagName('input');
+		let error = container.getElementsByClassName('error')[0];
+		let btn = container.getElementsByTagName('button')[0];
+		setError('', error);
+		if(inputs[1].value != inputs[2].value) // Check new and Confirm
+		{
+			setError('Confirm and new passwords do not match', error);
+			return;
+		}
+
+		fetch('/api/user/updatePassword', {
+			method: 'POST',
+			credentials: 'include',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				currentPassword: inputs[0].value,
+				newPassword: inputs[1].value
+			})
+		})
+		.then(response => response.json())
+		.then(json => {
+			setError(json.error ?? '', error);
+			if(!json.success)
+				return;
+			for(let i = 0; i < inputs.length; i++)
+				inputs[i].value = '';
+
+			let bgColor = btn.style.backgroundColor;
+			btn.style.backgroundColor = 'green';
+			setTimeout(() => btn.style.backgroundColor = bgColor, 1000);
+		})
+		.catch(err => {
+			console.error(err);
+			setError(err.message, error);
+		});
+	}
+
+	function setError(msg, el) {
+		el.innerHTML = msg;
+		el.style.display = msg == '' ? 'none' : 'block';
+	}
+
 	function setup() {
+		document.getElementById('changePassword')?.getElementsByTagName('button')[0]
+										.addEventListener('click', updatePassword);
 		document.getElementById('btnLogout')?.addEventListener('click', logout);
 	}
 
@@ -100,6 +147,11 @@ if(session == null)
 	}
 
 	@media screen and (max-width: 768px) {
+		:global(.layoutContent) {
+			max-width: unset;
+			margin: 0;
+		}
+
 		:global(.layoutContent .horizontal) {
 			flex-direction: column !important;
 		}

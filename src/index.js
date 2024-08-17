@@ -46,6 +46,7 @@ app.use(expressSession({
 app.use('/api/tags', require('./routes/api/tags'))
 app.use('/api/posts', require('./routes/api/posts'))
 app.use(require('./routes/api/login'))
+app.use('/api/user', require('./routes/api/user'));
 
 const loginRoutes = require('./routes/login')
 app.get('/login', loginRoutes.login)

@@ -46,7 +46,7 @@ const pageTitle = 'Register';
 				showError(json.error);
 			}
 			else
-				navigate('/');
+				navigate('/?refreshSession');
 		})
 		.catch(err => {
 			console.error('Failed to register account', err);
