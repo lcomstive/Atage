@@ -4,7 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 import { fetchAuth } from '../../scripts/Authenticate';
 
 const postID = Astro.params.id;
-const response = await fetchAuth(`${import.meta.env.API_URL}/posts/${postID}`, Astro.request);
+const response = await fetchAuth(`/posts/${postID}`, Astro.request);
 const post = await response.json();
 
 if(post.error) {
