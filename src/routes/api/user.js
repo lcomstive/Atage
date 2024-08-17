@@ -34,11 +34,26 @@ router.post('/updatePassword', async (req, res) =>
 			user.password = encrypted
 			await user.save()
 
-			console.log(`Updated password for [${req.session.userID}]`)
-
 			return res.json({ success: true })
 		})
 	})
+})
+
+router.post('/updateUsername', async (req, res) => {
+	if(!req.session.user)
+		return res.status(403).json({ error: 'Not logged in' })
+
+	let user = await User.findById(req.session.userID)
+	const { username } = req.body
+
+	if(await User.exists({ username }))
+		return res.json({ error: 'Username is taken' })
+
+	user.username = username
+	req.session.user.username = username
+	await user.save()
+
+	return res.json({ success: true })
 })
 
 module.exports = router

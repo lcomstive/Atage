@@ -8,7 +8,7 @@ router.post('/api/register', async (req, res) =>
 {
 	let username = req.body.username
 	console.log(`Checking if '${username}' already exists`)
-	let user = await User.findOne({ username: new RegExp(username, 'i') })
+	let user = await User.findOne({ username: new RegExp(`^${username}$`, 'mi') })
 	
 	if(user != null)
 	{
@@ -49,7 +49,7 @@ router.post('/api/login', async (req, res) =>
 	if(username == '')
 		return res.json({ error: 'Username empty' })
 
-	let user = await User.findOne({ username: new RegExp(username, 'i') })
+	let user = await User.findOne({ username: new RegExp(`^${username}$`, 'mi') })
 	if(!user)
 		return res.json({ error: 'User not found'})
 

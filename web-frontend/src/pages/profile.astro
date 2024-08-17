@@ -27,9 +27,16 @@ if(session == null)
 				<Horizontal style="justify-content: space-between;">
 					<Vertical style="width: 45%; gap: 15px">
 						<span class="columnTitle">Details</span>
-						<div id="usernameInput">
+						<div id="changeUsername">
 							<Input disabled={true} label="Username" value={session.username} />
-							<Icon name="mingcute:edit-2-fill" class="icon" />
+							<span class="iconContainer">
+								 <Icon name="mingcute:edit-2-fill" class="icon" />
+							</span>
+							<span class="iconContainer usernameConfirmIcons hidden">
+								<Icon name="mingcute:check-fill" class="icon" />
+								<Icon name="mingcute:close-fill" class="icon" />
+							</span>
+							<span class="error light hidden" style="text-align: center; padding: 5px; width: 100%">Error text</span>
 						</div>
 					</Vertical>
 					<Vertical style="width: 45%; gap: 15px" id="changePassword">
@@ -38,7 +45,7 @@ if(session == null)
 						<Input label="New" 			type="password" autocomplete="new-password"/>
 						<Input label="Confirm" 		type="password" autocomplete="new-password"/>
 						<button id="btnUpdatePassword" class="secondary light">Update Password</button>
-						<span class="error light" style="text-align: center; padding: 5px; display: none">Error text</span>
+						<span class="error light hidden" style="text-align: center; padding: 5px">Error text</span>
 					</Vertical>
 				</Horizontal>
 			</div>
@@ -49,6 +56,8 @@ if(session == null)
 <script>
 	import { navigate } from "astro:transitions/client";
 
+	const AnimationTime = 650; // Milliseconds
+
 	function logout() {
 		fetch(`/api/logout`)
 			.then(() => {
@@ -56,6 +65,49 @@ if(session == null)
 				navigate('/?refreshSession');
 			})
 			.catch(err => console.error(err));
+	}
+
+	function editUsername(edit = true) {
+		let container = document.getElementById('changeUsername');
+		container.getElementsByTagName('input')[0].disabled = !edit;
+		
+		let spans = container.getElementsByClassName('iconContainer');
+		spans[0].classList.toggle('hidden',  edit);
+		spans[1].classList.toggle('hidden', !edit);
+	}
+
+	function updateUsername() {
+		let container = document.getElementById('changeUsername');
+		let usernameInput = container.getElementsByTagName('input')[0];
+		let username = usernameInput.value;
+		let error = container.getElementsByClassName('error')[0];
+		setError('', error);
+
+		if(username == '')
+			return;
+
+		if(username == document.body.dataset.username)
+		{
+			// No change to username
+			editUsername(false);
+			return;
+		}
+
+		fetch('/api/user/updateUsername', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ username })
+		})
+		.then(response => response.json())
+		.then(json => {
+			setError(json.error ?? '', error);
+
+			if(!json.success)
+				return;
+			
+			editUsername(false);
+			navigate('/profile?refreshSession');
+		})		
 	}
 
 	function updatePassword() {
@@ -91,9 +143,8 @@ if(session == null)
 			for(let i = 0; i < inputs.length; i++)
 				inputs[i].value = '';
 
-			let bgColor = btn.style.backgroundColor;
-			btn.style.backgroundColor = 'rgb(var(--success))';
-			setTimeout(() => btn.style.backgroundColor = bgColor, 1000);
+			btn.classList.add('success')
+			setTimeout(() => btn.classList.remove('success'), AnimationTime);
 		})
 		.catch(err => {
 			console.error(err);
@@ -110,6 +161,14 @@ if(session == null)
 		document.getElementById('changePassword')?.getElementsByTagName('button')[0]
 										.addEventListener('click', updatePassword);
 		document.getElementById('btnLogout')?.addEventListener('click', logout);
+
+		let usernameIcons = document.getElementById('changeUsername')?.getElementsByClassName('icon');
+		if(usernameIcons?.length > 0)
+		{			
+			usernameIcons[0].addEventListener('click', () => editUsername(true));
+			usernameIcons[2].addEventListener('click', () => editUsername(false));
+			usernameIcons[1].addEventListener('click', updateUsername);
+		}
 	}
 
 	setup();
@@ -132,24 +191,33 @@ if(session == null)
 		margin-bottom: 5px;
 	}
 
-	#usernameInput {
+	#changeUsername {
 		display: flex;
+		flex-wrap: wrap;
 		flex-direction: row;
 		align-items: center;
 		gap: 10px;
 	}
 
-	#usernameInput :global(.customInput) {
+	#changeUsername :global(.customInput) {
 		flex-grow: 1;
 	}
 
-	#usernameInput .icon {
+	#changeUsername .icon {
 		cursor: pointer;
 		opacity: 0.7;
 	}
 
-	#usernameInput .icon:hover {
+	#changeUsername .icon:hover {
 		opacity: 1;
+	}
+
+	#changeUsername .usernameConfirmIcons :first-child {
+		color: rgb(14, 137, 0);
+	}
+
+	#changeUsername .usernameConfirmIcons :last-child {
+		color: rgb(var(--error));
 	}
 
 	@media screen and (max-width: 768px) {

@@ -27,13 +27,13 @@
 	--success: 0, 156, 0;
 }
 
-.accent, .primary, .secondary, .error {
+.accent, .primary, .secondary, .error, .success {
 	color: rgb(var(--background));
 	border: 1px solid rgba(var(--text), 0.1);
 	border-radius: var(--rounding);
 }
 
-.dark .accent, .dark .primary, .dark .secondary, .dark .error {
+.dark .accent, .dark .primary, .dark .secondary, .dark .error, .dark .success, .success {
 	color: rgb(var(--text));
 	border: 1px solid rgba(var(--text), 0.1);
 }
@@ -70,6 +70,13 @@
 
 :not(.dark) .error { border: 1px solid rgba(var(--error), 0.5); }
 .dark .error { border: 1px solid rgba(var(--text), 0.1); }
+
+/* Success */
+.success 			{ background: rgba(var(--success)); }
+.success.light		{ color: rgb(var(--text)); background: rgba(var(--success), 0.5); }
+.success.lighter  	{ color: rgb(var(--text)); background: rgba(var(--success), 0.3); }
+.success.lightest 	{ color: rgb(var(--text)); background: rgba(var(--success), 0.1); }
+
 
 /* Built-in types */
 html {
@@ -182,3 +189,5 @@ input:disabled:hover {
 	-o-transition: none !important;
 	transition: none !important;
 }
+
+.hidden { display: none; }
