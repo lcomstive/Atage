@@ -34,6 +34,8 @@ let pathname = new URL(Astro.request.url).pathname;
 let basePathname = pathname.substring(0, pathname.lastIndexOf('/'));
 if(basePathname == '')
 	basePathname = pathname;
+
+
 ---
 
 <div class="hamburgerMenu secondary lighter collapsed preventTransition">
@@ -56,7 +58,7 @@ if(basePathname == '')
 
 	<Space />
 
-	<div class="themeColours">
+	<div class:list={["themeColours", { hidden: import.meta.env.PROD }]}>
 		{colours.map(c => (
 			<div>
 				<p>{c[0].toUpperCase() + c.substring(1)}</p>
@@ -122,7 +124,7 @@ if(basePathname == '')
 
 <style>
 	/* Theme colorus [Temp] */
-	.themeColours {
+	.themeColours:not(.hidden) {
 		display: flex; gap: 5px; flex-direction: column;
 		margin-bottom: 20px;
 	}
@@ -309,12 +311,14 @@ if(basePathname == '')
 
 		.hamburgerMenu .title { padding-top: 0; }
 
+		.themeColours { display: none; }
+
 		.hamburgerMenu.collapsed {
 			height: 30px;
 			transition: 0.15s ease-in-out;
 			margin-bottom: 0;
 		}
-
+		
 		.collapsed .title > * { display: block !important; }	
 		
 		.collapsed :not(.title) { display: none; }
