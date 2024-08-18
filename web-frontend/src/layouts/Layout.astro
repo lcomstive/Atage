@@ -39,9 +39,9 @@ const session = Astro.locals.session;
 <style is:global>
 	div.layoutContent {
 		width: 100%;
-		padding-top: 10px;
-		padding-right: 10px;
-		height: 100dvh;
+		padding: 10px;
+		padding-left: 0;
+		height: calc(100dvh - 20px);
 		overflow-y: auto;
 	}
 
@@ -55,6 +55,7 @@ const session = Astro.locals.session;
 
 		.layoutContent {
 			padding: 10px;
+			padding-left: 0;
 			width: unset !important;
 			height: calc(100dvh - 75px) !important;
 		}
