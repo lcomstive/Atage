@@ -191,6 +191,17 @@ input:disabled:hover {
 	background: rgba(var(--secondary), 0.2);
 }
 
+textarea {
+	font-family: 'Poppins', system-ui, sans-serif;
+	border-radius: var(--rounding);
+	padding: 5px;
+	color: rgb(var(--text));
+	min-height: 20px;
+	resize: vertical;
+	background: rgba(var(--secondary), 0.1);
+	border: 1px solid rgba(var(--secondary));
+}
+
 /* File input */
 .fileInput input[type="file"]
 {

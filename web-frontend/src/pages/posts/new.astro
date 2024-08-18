@@ -44,6 +44,22 @@ const title = 'New Post';
 					</Horizontal>
 				</div>
 			</template>
+
+			<div class="post">
+				<div class="postPreview"></div>
+
+				<TagsInput addButton={true} />
+
+				<textarea class="postDescription" placeholder="Description"></textarea>
+
+				<Horizontal>
+					<Horizontal>
+						Public
+						<input type="checkbox" checked class="postPublic" />
+					</Horizontal>
+					<Icon name="mingcute:delete-2-fill" class="btnRemove" />
+				</Horizontal>
+			</div>
 		</div>
 
 		<div style="display: flex; justify-content: center">
