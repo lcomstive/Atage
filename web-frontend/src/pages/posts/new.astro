@@ -1,0 +1,239 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Vertical from "../../components/Vertical.astro";
+import { Icon } from "astro-icon/components";
+import TagsInput from "../../components/TagsInput.astro";
+import Horizontal from "../../components/Horizontal.astro";
+
+const title = 'New Post';
+---
+
+<Layout title={title}>
+	<h1>{title}</h1>
+
+	<Vertical>
+		<div class="fileInput accent">
+			<input
+				id="inputFiles"
+				type="file"
+				name="fileSelect"
+				multiple
+				accept="{{ postMediaFilters }}">
+
+			<label for="inputFiles">
+				<Icon name="mingcute:plus-fill" />
+				<p>Add files</p>
+			</label>
+		</div>
+
+		<div id="postsContainer">
+			<template id="postTemplate">
+				<div class="post">
+					<div class="postPreview"></div>
+
+					<TagsInput addButton={true} />
+
+					<textarea class="postDescription" placeholder="Description"></textarea>
+
+					<Horizontal>
+						<Horizontal>
+							Public
+							<input type="checkbox" checked class="postPublic" />
+						</Horizontal>
+						<Icon name="mingcute:delete-2-fill" class="btnRemove" />
+					</Horizontal>
+				</div>
+			</template>
+		</div>
+
+		<div style="display: flex; justify-content: center">
+			<button id="btnCreate" class="accent light">Upload</button>
+			<!-- TODO: Progress bar  -->
+		</div>
+		<span class="error light hidden">Error text</span>
+	</Vertical>
+</Layout>
+
+<script>
+	import { TagInput } from "../../components/TagsInput";
+
+	const VideoExtensions = [
+		'mp4',
+		'mpeg4',
+		'mov',
+		'ogg',
+		'webm'
+	]
+
+	let posts = [];
+	let inputFiles, btnCreate, errorText, postsContainer, postTemplate;
+
+	function onFilesChange() {
+		for(let i = 0; i < inputFiles.files.length; i++)
+		{
+			let postEl = postTemplate.content.cloneNode(true);
+			postsContainer.appendChild(postEl);
+			postEl = postsContainer.lastElementChild;
+
+			// Set preview media
+			let filename = inputFiles.files[i].name
+			let postPreview = postEl.getElementsByClassName('postPreview')[0]
+			let previewExt = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase()
+			if(VideoExtensions.includes(previewExt))
+			{
+				let video = document.createElement('video')
+				video.src = URL.createObjectURL(inputFiles.files[i])
+				video.controls = true
+				postPreview.appendChild(video)
+			}
+			else
+			{
+				let img = document.createElement('img')
+				img.src = URL.createObjectURL(inputFiles.files[i])
+				postPreview.appendChild(img)
+			}
+
+			let post = {
+				container: postEl,
+				media: inputFiles.files[i],
+
+				// Tags input
+				tagInput: new TagInput(postEl.getElementsByClassName('tagsInput')[0])
+			};
+			
+			// Delete button
+			postEl.getElementsByClassName('btnRemove')[0]
+				.addEventListener('click', () => {
+					postsContainer.removeChild(postEl);
+					posts.splice(posts.find(x => x.container == postEl));
+					btnCreate.disabled = posts.length == 0;
+				});
+
+			posts.push(post);
+		}
+
+		// Clear file list
+		inputFiles.value = null;
+
+		// Set create button state
+		btnCreate.disabled = posts.length == 0;
+	}
+
+	function createPost() {
+		let body = new FormData()
+		let allPosts = []
+		for(let i = 0; i < posts.length; i++)
+		{
+			body.append('media', posts[i].media, posts[i].media.name)
+			
+			let post = {}
+			post.description = posts[i].container.getElementsByClassName('postDescription')[0].value
+			post.public = posts[i].container.getElementsByClassName('postPublic')[0].checked
+
+			// Tags from tagsAutocomplete.js
+			post.tags = posts[i].tagInput.selectedTags;
+			
+			console.log(post)
+			allPosts.push(post)
+		}
+
+		body.append('posts', JSON.stringify(allPosts))
+
+		const request = new XMLHttpRequest()
+		request.open('POST', '/api/posts/new', true)
+		request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+		request.responseType = 'json'
+
+		request.upload.addEventListener('progress', ev => {
+			let progress = (ev.loaded / ev.total) * 100
+			console.log(`Upload progress: ${progress}%`)
+			// setUploadProgress(progress)
+		})
+
+		request.onload = () => {
+			// showProgressBar(false)
+	
+			if(request.status == 200 && request.response.success)
+				document.location.href = '/posts'
+			else
+				setError(request.response.error)
+		}
+
+		request.send(body)
+	}
+
+	function setError(msg) {
+		errorText.innerHTML = msg;
+		errorText.classList.toggle('hidden', !msg || msg == '');
+	}
+
+	function setup() {
+		inputFiles = document.getElementById('inputFiles');
+		btnCreate = document.getElementById('btnCreate');
+		errorText = document.getElementsByClassName('layoutContent')[0].getElementsByClassName('error')[0];
+		postsContainer = document.getElementById('postsContainer');
+		postTemplate = document.getElementById('postTemplate');
+
+		btnCreate.disabled = true;
+
+		btnCreate.addEventListener('click', createPost);
+		inputFiles.addEventListener('change', onFilesChange);
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>
+
+<style is:global>
+	.fileInput, #btnCreate {
+		width: 100%;
+		max-width: 200px;
+		margin: 0 auto;
+	}
+
+	.fileInput label
+	{
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		height: 15px;
+		font-size: 0.85em;
+	}
+
+	.error {
+		text-align: center;
+		padding: 5px 10px;
+	}
+
+	#postsContainer
+	{
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	.post
+	{
+		position: relative;
+		border-radius: var(--rounding);
+		border: 1px solid var(--background2);
+
+		padding: 10px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 15px;
+	}
+
+	.postpreview { width: 100%; }
+
+	.postPreview > *
+	{
+		width: 100%;
+		height: auto;
+		max-height: 200px;
+		object-fit: contain;
+	}
+</style>

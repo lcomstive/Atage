@@ -4,6 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 import { fetchAuth } from '../../scripts/Authenticate'
 import Vertical from '../../components/Vertical.astro';
 import TagsInput from '../../components/TagsInput.astro';
+import Horizontal from '../../components/Horizontal.astro';
 
 let apiURL = '/posts'
 if(Astro.url.searchParams.has('tags'))
@@ -11,12 +12,21 @@ if(Astro.url.searchParams.has('tags'))
 
 const response = await fetchAuth(apiURL, Astro.request);
 const posts = await response.json();
+const title = 'Posts';
 ---
 
-<Layout title='Posts'>
-	<h1>Posts</h1>
+<Layout title={title}>
 	<Vertical>
+		<Horizontal id="topBar">
+			<h1>{title}</h1>
+
+			<a href="/posts/new" id="btnNewPost" class="primary light">
+				<Icon name="mingcute:plus-fill" />
+				<span>New</span>
+			</a>
+		</Horizontal>
 		<TagsInput transition:persist />
+
 		<div class="postsContainer">
 			{posts.map(post => (
 				<a href={`/posts/${post._id}`} class="hide">
@@ -118,6 +128,33 @@ const posts = await response.json();
 		background: rgba(var(--secondary), 0.5);
 	}
 
+	#topBar {
+		position: relative;
+		display: flex;
+		width: 100%;
+	}
+
+	#topBar h1 {
+		width: 100%;
+		text-align: center;
+	}
+
+	#btnNewPost {
+		width: fit-content;
+		color: #fff;
+		text-decoration: none;
+		padding: 5px 15px;
+		height: fit-content;
+
+		gap: 7.5px;
+		display: flex;
+		align-items: center;
+		
+		position: absolute;
+		right: 10px;
+		top: 25px;
+	}
+
 	@media screen and (max-aspect-ratio: 1/1) {
 		.postsContainer > a {
 			height: 200px;
@@ -131,6 +168,16 @@ const posts = await response.json();
 			height: auto;
 			display: flex;
 			justify-content: center;
+		}
+	}
+
+	@media screen and (max-width: 550px) {
+		#topBar { flex-direction: column; }
+
+		#btnNewPost {
+			margin-left: auto;
+			position: relative;
+			top: unset; right: unset;
 		}
 	}
 </style>

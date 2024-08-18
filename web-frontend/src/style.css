@@ -142,6 +142,16 @@ button:active { opacity: 0.5;}
 
 .dark button { color: rgb(var(--text));}
 
+button:disabled {
+	cursor: not-allowed;
+	color: rgba(var(--text), 0.75);
+	background-color: rgba(var(--text), 0.04) !important;
+}
+
+button:disabled:hover {
+	background: rgba(var(--text), 0.06) !important;
+}
+
 input {
 	outline: none;
 	padding: 7.5px 12.5px;
@@ -180,6 +190,29 @@ input:disabled:hover {
 .dark input:disabled {
 	background: rgba(var(--secondary), 0.2);
 }
+
+/* File input */
+.fileInput input[type="file"]
+{
+	opacity: 0;
+	width: 0.1px;
+	height: 0.1px;
+	position: absolute;
+}
+
+.fileInput label
+{
+	display: block;
+	position: relative;
+	padding: 10px 5px;
+	border-radius: var(--rounding);
+	background: none;
+	border: 1px solid var(--background2);
+	cursor: pointer;
+	text-align: center;
+}
+
+.fileInput:hover { opacity: 0.8; }
 
 /* Misc. */
 .preventTransition, .preventTransition * {

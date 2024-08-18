@@ -8,7 +8,7 @@ import Horizontal from "../components/Horizontal.astro";
 
 const title = 'Profile';
 
-const session = await getSession(Astro.request);
+const session = await getSession();
 if(session == null)
 	return Astro.redirect('/login');
 ---
