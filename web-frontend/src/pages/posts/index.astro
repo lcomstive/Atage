@@ -1,7 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
 import Layout from '../../layouts/Layout.astro';
-import { fetchAuth } from '../../scripts/Authenticate'
+import { fetchAuth, getSession } from '../../scripts/Authenticate'
 import Vertical from '../../components/Vertical.astro';
 import TagsInput from '../../components/TagsInput.astro';
 import Horizontal from '../../components/Horizontal.astro';
@@ -13,6 +13,8 @@ if(Astro.url.searchParams.has('tags'))
 const response = await fetchAuth(apiURL, Astro.request);
 const posts = await response.json();
 const title = 'Posts';
+
+const session = await getSession();
 ---
 
 <Layout title={title}>
@@ -20,10 +22,12 @@ const title = 'Posts';
 		<Horizontal id="topBar">
 			<h1>{title}</h1>
 
-			<a href="/posts/new" id="btnNewPost" class="primary light">
-				<Icon name="mingcute:plus-fill" />
-				<span>New</span>
-			</a>
+			{session &&
+				<a href="/posts/new" id="btnNewPost" class="primary light">
+					<Icon name="mingcute:plus-fill" />
+					<span>New</span>
+				</a>
+			}
 		</Horizontal>
 		<TagsInput transition:persist />
 

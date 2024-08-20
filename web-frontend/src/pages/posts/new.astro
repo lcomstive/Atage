@@ -5,8 +5,13 @@ import { Icon } from "astro-icon/components";
 import TagsInput from "../../components/TagsInput.astro";
 import Horizontal from "../../components/Horizontal.astro";
 import Space from "../../components/Space.astro";
+import { getSession } from "../../scripts/Authenticate";
 
 const title = 'New Post';
+
+const session = await getSession();
+if(session == null)
+	return Astro.redirect('/login');
 ---
 
 <Layout title={title}>
