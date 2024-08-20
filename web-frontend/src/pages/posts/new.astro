@@ -192,7 +192,10 @@ import { TagInput } from "../../components/TagsInput";
 				body: JSON.stringify({ posts: body })
 			})
 			.then(response => response.json())
-			.then(() => navigate('/posts'))
+			.then(() => {
+				posts = [];
+				navigate('/posts');
+			})
 			.catch(err => console.error(err))
 	}
 

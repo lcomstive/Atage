@@ -3,7 +3,7 @@ const express = require('express')
 const auth = require('../../middleware/auth')
 const Post = require('../../models/post')
 const { PostMediaDirectory } = require('../api/posts')
-
+const { VideoExtensions } = require("../../fileExtensions")
 const router = express.Router()
 
 let LLM = {
@@ -81,12 +81,16 @@ router.get('/tags/:id', auth, async (req, res) => {
 	if(!post)
 		return res.status(404).send({ error: 'Post not found' })
 
+	let extension = post.filepath.substring(post.filepath.lastIndexOf('.'))
+	if(VideoExtensions.includes(extension))
+		return res.status(400).json({ error: `Video files are not supported for tag classification` })
+
 	try
 	{
 		let data = fs.readFileSync(`${PostMediaDirectory}/${post.filepath}`)
 		generateTags(res, data.toString('base64'));
 	}
-	catch(err) { return res.status(500).json(`Failed to get image tags - ${err.message}`) }
+	catch(err) { return res.status(500).json({ error: `Failed to get image tags - ${err.message}` }) }
 })
 
 /*

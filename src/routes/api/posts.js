@@ -54,6 +54,40 @@ updateTagPostCount = async (tagID) =>
 }
 
 // Create post
+function generateThumbnail(mediaOutput, extension) {
+	let isVideo = VideoExtensions.includes(extension)
+	
+	if(isVideo)
+	{
+		// Generate thumbnail from first second of video.
+		// Generates a .jpg, used temporarily before converting to .webp using sharp
+		ffmpeg({ source: mediaOutput })
+			.seekInput(1)
+			.frames(1)
+			.output(`${mediaOutput}_thumbnail.jpg`)
+			.on('error', err => console.log(`Failed to generate thumbnail for '${mediaOutput}`, err))
+			.on('end', () =>
+			{
+				let fileContents = fs.readFileSync(`${mediaOutput}_thumbnail.jpg`)
+				// Convert jpg thumbnail to webp
+				sharp(fileContents)
+					.resize(400 /* width, px */)
+					.toFile(`${mediaOutput}${ThumbnailExtension}`)
+					.then(() => fs.unlinkSync(`${mediaOutput}_thumbnail.jpg`)) // Delete temp thumbnail
+					.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
+			})
+			.run()
+	}
+	else
+	{
+		let fileContents = fs.readFileSync(mediaOutput)
+		sharp(fileContents)
+			.resize(400 /* width, px */)
+			.toFile(`${mediaOutput}${ThumbnailExtension}`)
+			.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
+	}
+}
+
 router.post('/new', auth, async (req, res) =>
 {
 	if(!fs.existsSync(PostMediaDirectory))
@@ -97,38 +131,8 @@ router.post('/new', auth, async (req, res) =>
 		post.filepath = `${req.session.userID}/${post._id}${extension}`
 		let mediaOutput = `${PostMediaDirectory}/${post.filepath}`
 
-		let isVideo = VideoExtensions.includes(extension)
-
 		await req.files.media[i].mv(mediaOutput)
-			.then(() =>
-			{
-				// Generate thumbnail
-				if(isVideo)
-				{
-					// Generate thumbnail from first second of video.
-					// Generates a .jpg, used temporarily before converting to .webp using sharp
-					ffmpeg({ source: mediaOutput })
-						.seekInput(1)
-						.frames(1)
-						.output(`${mediaOutput}_thumbnail.jpg`)
-						.on('error', err => console.log(`Failed to generate thumbnail for '${mediaOutput}`, err))
-						.on('end', () =>
-						{
-							// Convert jpg thumbnail to webp
-							sharp(`${mediaOutput}_thumbnail.jpg`)
-								.resize(400 /* width, px */)
-								.toFile(`${mediaOutput}${ThumbnailExtension}`)
-								.then(() => fs.unlinkSync(`${mediaOutput}_thumbnail.jpg`)) // Delete temp thumbnail
-								.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
-						})
-						.run()
-				}
-				else
-					sharp(mediaOutput)
-						.resize(400 /* width, px */)
-						.toFile(`${mediaOutput}${ThumbnailExtension}`)
-						.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
-			})
+			.then(() => generateThumbnail(mediaOutput, extension))
 			.catch(err => console.error(`Failed to create file '${mediaOutput}'`, err))
 		
 		await post.save()
@@ -183,7 +187,6 @@ router.post('/:id/update', async (req, res) =>
 router.post('/updateMany', async (req, res) => {
 	for(let i = 0; i < req.body.posts?.length; i++)
 	{
-		console.log(`Updating post: ${JSON.stringify(req.body.posts[i])}`)
 		try { await updatePost(req.body.posts[i].id, req.body.posts[i]) }
 		catch(err) { console.error(err) }
 	}
@@ -208,22 +211,31 @@ router.get('/:id', async (req, res) =>
     catch(err) { return res.status(500).json({ error: err.message }) }
 })
 
+function tryDeleteFile(path, maxAttempts = 4) {
+	if(maxAttempts <= 0 || !fs.existsSync(path))
+		return;
+
+	fs.unlink(path, err => {
+		if(!err) return; // Success
+
+		maxAttempts -= 1
+		console.log(`Error deleting '${path}' - ${err} [Attempts left: ${maxAttempts}]`)
+		setTimeout(() => tryDeleteFile(path, maxAttempts), 5000)
+	})
+}
+
 router.delete('/:id', auth, async (req, res) =>
 {
 	let post = await Post.findById(req.params.id)
+	if(!post)
+		return res.status(404).send({ error: 'Post not found' })
 	if(post.author != req.session?.userID)
 		return res.status(403).send({ error: 'Not authorised '})
 	
 	let tags = [...post.tags] // Shallow copy
 
-	try
-	{
-		if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}`))
-			fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}`)
-		if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`))
-			fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`)
-	}
-	catch(err) { console.error(`Failed to remove post media '${post.filepath}' - ${err.message}`) }
+	tryDeleteFile(`${PostMediaDirectory}/${post.filepath}`)
+	tryDeleteFile(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`)
 
 	await Post.findByIdAndDelete(req.params.id)
 
