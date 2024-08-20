@@ -1,4 +1,6 @@
 ---
+import { Icon } from 'astro-icon/components';
+import Horizontal from '../../../components/Horizontal.astro';
 import Tag from '../../../components/Tag.astro';
 import Layout from '../../../layouts/Layout.astro';
 import { fetchAuth, getSession } from '../../../scripts/Authenticate';
@@ -18,7 +20,11 @@ const isAuthor = session?.id == post.author
 
 <Layout title='Posts'>
 	<div class="postContainer">
-		<img src={`/api/posts/${postID}/img`} alt='Post media' />
+		<img
+			src={`/api/posts/${postID}/img`}
+			alt='Post media'
+			style="cursor: pointer"
+			onclick={`document.location.href='/api/posts/${postID}/img'`} />
 
 		<div class="tags">
 			<a class="primary light tag"><span style="opacity: 0.75">Poster:</span> {post.authorName}</a>
@@ -30,11 +36,26 @@ const isAuthor = session?.id == post.author
 		<p>{ post.description }</p>
 
 		<br>
-		<a href={`/api/posts/${postID}/img`}>View original</a>
 
-		{ isAuthor && <a href={`/posts/${postID}/edit`} class="editPost">Edit</a> }
+		<Horizontal style="justify-content: space-between">
+			<button onclick="window.history.go(-1)" class="secondary lightest"><Icon name="mingcute:arrow-left-fill" /> Back</button>
+			{ isAuthor && <button class="secondary lightest" id="btnEditPost" data-postid={post._id}>Edit <Icon name="mingcute:edit-2-fill" /></button> }
+		</Horizontal>
 	</div>
 </Layout>
+
+<script>
+	import { navigate } from "astro:transitions/client";
+
+	function setup() {
+		let btnEdit = document.getElementById('btnEditPost');
+		if(btnEdit)
+			btnEdit.addEventListener('click', () => navigate(`/posts/${btnEdit.dataset.postid}/edit`));
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>
 
 <style>
 	.postContainer {
@@ -53,5 +74,9 @@ const isAuthor = session?.id == post.author
 		width: 100%;
 		height: auto;
 		max-width: 800px;
+	}
+
+	button svg {
+		margin-bottom: -2px;
 	}
 </style>

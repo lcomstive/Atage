@@ -32,7 +32,7 @@ if(session == null)
 			</label>
 		</div>
 
-		<div id="postsContainer">
+		<div id="newPostsContainer">
 			<template id="postTemplate">
 				<div class="post">
 					<div class="postPreview"></div>
@@ -64,7 +64,8 @@ if(session == null)
 </Layout>
 
 <script>
-	import { TagInput } from "../../components/TagsInput";
+	import { navigate } from "astro:transitions/client";
+import { TagInput } from "../../components/TagsInput";
 
 	const VideoExtensions = [
 		'mp4',
@@ -75,14 +76,14 @@ if(session == null)
 	]
 
 	let posts = [];
-	let inputFiles, btnCreate, errorText, postsContainer, postTemplate;
+	let inputFiles, btnCreate, errorText, newPostsContainer, postTemplate;
 
 	function onFilesChange() {
 		for(let i = 0; i < inputFiles.files.length; i++)
 		{
 			let postEl = postTemplate.content.cloneNode(true);
-			postsContainer.appendChild(postEl);
-			postEl = postsContainer.lastElementChild;
+			newPostsContainer.appendChild(postEl);
+			postEl = newPostsContainer.lastElementChild;
 
 			// Set preview media
 			let filename = inputFiles.files[i].name
@@ -114,7 +115,7 @@ if(session == null)
 			// Delete button
 			postEl.getElementsByClassName('btnRemove')[0]
 				.addEventListener('click', () => {
-					postsContainer.removeChild(postEl);
+					newPostsContainer.removeChild(postEl);
 					posts.splice(posts.find(x => x.container == postEl));
 					btnCreate.disabled = posts.length == 0;
 
@@ -186,13 +187,13 @@ if(session == null)
 		}
 		console.log(JSON.stringify({ posts: body }))
 		fetch('/api/posts/updateMany', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ posts: body })
-		})
-		.then(response => response.json())
-		.then(data => console.log(data))
-		.catch(err => console.error(err))
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ posts: body })
+			})
+			.then(response => response.json())
+			.then(() => navigate('/posts'))
+			.catch(err => console.error(err))
 	}
 
 	function deletePost(postID) {
@@ -202,6 +203,7 @@ if(session == null)
 				if(!data.success)
 					console.log(data);
 			})
+			.catch(err => console.error(err))
 	}
 
 	function setError(msg) {
@@ -210,10 +212,12 @@ if(session == null)
 	}
 
 	function setup() {
+		newPostsContainer = document.getElementById('newPostsContainer');
+		if(!newPostsContainer) return;
+		
 		inputFiles = document.getElementById('inputFiles');
 		btnCreate = document.getElementById('btnCreate');
 		errorText = document.getElementsByClassName('layoutContent')[0].getElementsByClassName('error')[0];
-		postsContainer = document.getElementById('postsContainer');
 		postTemplate = document.getElementById('postTemplate');
 
 		btnCreate.disabled = true;
@@ -249,7 +253,7 @@ if(session == null)
 		padding: 5px 10px;
 	}
 
-	#postsContainer
+	#newPostsContainer
 	{
 		display: flex;
 		flex-direction: column;

@@ -1,37 +1,30 @@
 ---
+import { Icon } from 'astro-icon/components';
 import Layout from '../layouts/Layout.astro';
-import Card from '../components/Card.astro';
+import { APIAddress } from '../scripts/API';
+import Horizontal from '../components/Horizontal.astro';
+
+const postsRequest = await fetch(`${APIAddress}/posts?count=5`, { headers: { 'Accept': 'application/json' } });
+const posts = await postsRequest.json();
 ---
 
 <Layout title="Home">
 	<main>
-		<h1>Welcome to <span class="text-gradient">test page</span></h1>
-		<p class="instructions">
-			To get started, open the directory <code>src/pages</code> in your project.<br />
-			<strong>Code Challenge:</strong> Tweak the "Welcome to Astro" message above.
-		</p>
-		<ul role="list" class="link-card-grid">
-			<Card
-				href="https://docs.astro.build/"
-				title="Documentation"
-				body="Learn how Astro works and explore the official API docs."
-			/>
-			<Card
-				href="https://astro.build/integrations/"
-				title="Integrations"
-				body="Supercharge your project with new frameworks and libraries."
-			/>
-			<Card
-				href="https://astro.build/themes/"
-				title="Themes"
-				body="Explore a galaxy of community-built starter themes."
-			/>
-			<Card
-				href="https://astro.build/chat/"
-				title="Community"
-				body="Come say hi to our amazing Discord community. ❤️"
-			/>
-		</ul>
+		<h1>Welcome to <span class="text-gradient">Atage</span></h1>
+		
+		<h3>Recent Posts</h3>
+		<div class="recentPosts">
+			<Horizontal>
+				{posts.map(post => (
+						<a href={`/posts/${post._id}`} class="post">
+						<img src={`/api/posts/${post._id}/thumbnail`} />
+					</a>
+				))}
+			</Horizontal>
+
+			<a href="/posts" class="seeMore">See more <Icon name="mingcute:arrow-right-fill" /></a>
+		</div>
+
 	</main>
 </Layout>
 
@@ -67,28 +60,12 @@ import Card from '../components/Card.astro';
 		background-size: 400%;
 		background-position: 0%;
 	}
-	.instructions {
-		margin-bottom: 2rem;
-		border: 1px solid rgba(var(--accent-light), 25%);
-		background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
-		padding: 1.5rem;
-		border-radius: 8px;
+
+	.recentPosts {
+		
 	}
-	.instructions code {
-		font-size: 0.8em;
-		font-weight: bold;
-		background: rgba(var(--accent-light), 12%);
-		color: rgb(var(--accent-light));
-		border-radius: 4px;
-		padding: 0.3em 0.4em;
-	}
-	.instructions strong {
-		color: rgb(var(--accent-light));
-	}
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
+
+	.post img {
+		border-radius: var(--rounding);
 	}
 </style>

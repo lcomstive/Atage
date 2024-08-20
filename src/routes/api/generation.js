@@ -44,7 +44,7 @@ const CheckLLMAvailable = async () =>
 }
 try { CheckLLMAvailable() } catch {}
 
-async function generateTags(req, res, imageBase64) {
+async function generateTags(res, imageBase64) {
 	const response = await fetch(`${LLM.API}/api/generate`, {
 		method: 'POST',
 		body: JSON.stringify({
@@ -81,14 +81,12 @@ router.get('/tags/:id', auth, async (req, res) => {
 	if(!post)
 		return res.status(404).send({ error: 'Post not found' })
 
-	fs.readFile(`${PostMediaDirectory}/${post.filepath}`, (err, data) => {
-		if(err) {
-			console.error(`Failed to get post media`, err);
-			return res.status(500).json({ error: `Failed to get post media - ${err}` })
-		}
-
-		generateTags(req, res, data.toString('base64'));
-	})
+	try
+	{
+		let data = fs.readFileSync(`${PostMediaDirectory}/${post.filepath}`)
+		generateTags(res, data.toString('base64'));
+	}
+	catch(err) { return res.status(500).json(`Failed to get image tags - ${err.message}`) }
 })
 
 /*
@@ -101,7 +99,7 @@ router.post('/tags', auth, async (req, res) => {
 	if(![ 'image/jpeg', 'image/png', 'image/webp' ].includes(req.headers['content-type']))
 		return res.status(404).json({ error: 'Only png and jpeg image formats are supported' })
 
-	return await generateTags(req, res, req.body.toString('base64'))
+	return await generateTags(res, req.body.toString('base64'))
 })
 
 module.exports = router

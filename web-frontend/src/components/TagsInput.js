@@ -229,10 +229,6 @@ export class TagInput {
 				this.highlightedTag = -1;
 				break;
 			case 'suggested':
-				console.log(tag);
-				console.log(this.suggestedTags);
-				console.log(this.suggestedTags.indexOf(tag));
-
 				this.suggestedTags.splice(this.suggestedTags.indexOf(tag), 1);
 
 				this.addTag(tag);

@@ -181,7 +181,6 @@ router.post('/:id/update', async (req, res) =>
 })
 
 router.post('/updateMany', async (req, res) => {
-	console.log(JSON.stringify(req.body))
 	for(let i = 0; i < req.body.posts?.length; i++)
 	{
 		console.log(`Updating post: ${JSON.stringify(req.body.posts[i])}`)
@@ -217,10 +216,14 @@ router.delete('/:id', auth, async (req, res) =>
 	
 	let tags = [...post.tags] // Shallow copy
 
-	if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}`))
-		fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}`)
-	if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`))
-		fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`)
+	try
+	{
+		if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}`))
+			fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}`)
+		if(fs.existsSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`))
+			fs.unlinkSync(`${PostMediaDirectory}/${post.filepath}${ThumbnailExtension}`)
+	}
+	catch(err) { console.error(`Failed to remove post media '${post.filepath}' - ${err.message}`) }
 
 	await Post.findByIdAndDelete(req.params.id)
 

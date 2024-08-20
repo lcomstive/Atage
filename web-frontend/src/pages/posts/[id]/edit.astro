@@ -43,7 +43,7 @@ if(session?.id != post.author)
 	import { TagInput } from "../../../components/TagsInput";
 	import { navigate } from "astro:transitions/client";
 
-	let tagsInput, post, postContainer
+	let tagsInput, post
 
 	let elements = {}
 
@@ -64,18 +64,16 @@ if(session?.id != post.author)
 		.then(data => {
 			if(data.error)
 				return console.error(data.error);
-			else if(!data.success)
-				return;
-
-			let classes = elements.updateButton.className;
-			elements.updateButton.className = 'success';
-			setTimeout(() => elements.updateButton.className  = classes, 600);
+			else if(data.success)
+				window.history.go(-1);
 		})
 		.catch(err => console.error(err));
 	}
 
 	function deletePost() {
-		console.log(`Deleting post ${post._id}...`);
+		fetch(`/api/posts/${post._id}`, { method: 'DELETE' })
+			.then(() => navigate('/posts'))
+			.catch(err => console.error(err));
 	}
 
 	function setup() {
@@ -102,7 +100,7 @@ if(session?.id != post.author)
 		elements.updateButton = document.getElementById('btnUpdate');
 		elements.updateButton.addEventListener('click', updatePost);
 
-		document.getElementById('btnCancel').addEventListener('click', () => navigate(`/posts/${post._id}`));
+		document.getElementById('btnCancel').addEventListener('click', () => window.history.go(-1));
 		document.getElementById('btnDelete').addEventListener('click', deletePost);
 	}
 
