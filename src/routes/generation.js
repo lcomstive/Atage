@@ -1,9 +1,9 @@
 const fs = require('fs')
 const express = require('express')
-const auth = require('../../middleware/auth')
-const Post = require('../../models/post')
-const { PostMediaDirectory } = require('../api/posts')
-const { VideoExtensions } = require("../../fileExtensions")
+const auth = require('../middleware/auth')
+const Post = require('../models/post')
+const { PostMediaDirectory } = require('./posts')
+const { VideoExtensions } = require("../fileExtensions")
 const router = express.Router()
 
 let LLM = {

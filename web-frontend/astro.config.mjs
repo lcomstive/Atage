@@ -9,9 +9,8 @@ export default defineConfig({
   integrations: [icon()],
   output: 'server',
   adapter: node({
-    mode: "standalone"
+    mode: "middleware"
   }),
-  server: { host: true },
   vite: {
 	server: {
 		proxy: {

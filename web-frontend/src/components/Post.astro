@@ -14,7 +14,7 @@ const { post, useThumbnail = false, ...attrs } = Astro.props;
 		<video src={`/api/posts/${post._id}/img`} controls></video>
 	}
 	{(!post.isVideo || useThumbnail) &&
-		<img async decoding="async"
+		<img
 			src={`/api/posts/${post._id}/` + (useThumbnail ? 'thumbnail' : 'img')}
 			alt='Post media'
 		/>

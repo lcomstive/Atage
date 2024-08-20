@@ -2,12 +2,11 @@
   "name": "atage",
   "version": "0.0.1",
   "description": "Tag-based gallery system",
-  "main": "src/index.js",
+  "main": "src/index.mjs",
   "scripts": {
     "dev": "nodemon .",
-	"web:dev": "npm --prefix web-frontend run dev",
-	"web:build": "npm --prefix web-frontend run build",
-	"web:run": "npm run web:build && node ./web-frontend/dist/server/entry.mjs"
+    "web:dev": "npm --prefix web-frontend run dev",
+    "web:build": "npm --prefix web-frontend run build"
   },
   "author": "",
   "license": "ISC",
