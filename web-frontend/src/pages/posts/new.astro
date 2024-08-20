@@ -105,6 +105,7 @@ if(session == null)
 			let post = {
 				container: postEl,
 				media: inputFiles.files[i],
+				preview: postPreview,
 
 				// Tags input
 				tagInput: new TagInput(postEl.getElementsByClassName('tagsInput')[0])
@@ -116,8 +117,14 @@ if(session == null)
 					postsContainer.removeChild(postEl);
 					posts.splice(posts.find(x => x.container == postEl));
 					btnCreate.disabled = posts.length == 0;
+
+					if(post.id)
+						deletePost(post.id);
+					else if(post.upload)
+						post.upload.abort(); // Stop uploading image
 				});
 
+			uploadFile(post);
 			posts.push(post);
 		}
 
@@ -128,47 +135,72 @@ if(session == null)
 		btnCreate.disabled = posts.length == 0;
 	}
 
-	function createPost() {
-		let body = new FormData()
-		let allPosts = []
+	function uploadFile(post) {
+		post.preview.style.opacity = 0.3;
+
+		let body = new FormData();
+		body.append('media', post.media, post.media.name);
+		body.append('posts', JSON.stringify([{
+			description: '',
+			public: false,
+			tags: []
+		}]));
+
+		post.upload = new XMLHttpRequest();
+		post.upload.open('POST', '/api/posts/new', true);
+		post.upload.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+		post.upload.responseType = 'json';
+
+		post.upload.upload.addEventListener('progress', ev => {
+			let progress = (ev.loaded / ev.total) * 100;
+			console.log(`Upload progress: ${progress}%`);
+		});
+
+		post.upload.onload = () => {
+			if(post.upload.status != 200 || !post.upload.response.success)
+			{
+				setError(post.upload.response.error);
+				return;
+			}
+
+			post.id = post.upload.response.postIDs[0];
+			post.preview.style.opacity = 1;
+			post.upload = null;
+			console.log(`Post ID: ${post.id}`);
+		};
+		post.upload.send(body);
+	}
+
+	function updatePosts() {
+		let body = []
 		for(let i = 0; i < posts.length; i++)
 		{
-			body.append('media', posts[i].media, posts[i].media.name)
-			
-			let post = {}
-			post.description = posts[i].container.getElementsByClassName('postDescription')[0].value
-			post.public = posts[i].container.getElementsByClassName('postPublic')[0].checked
-
-			// Tags from tagsAutocomplete.js
-			post.tags = posts[i].tagInput.selectedTags;
-			
-			console.log(post)
-			allPosts.push(post)
+			body.push({
+				id: posts[i].id,
+				public: posts[i].container.getElementsByClassName('postPublic')[0].checked,
+				description: posts[i].container.getElementsByTagName('textarea')[0].value,
+				tags: posts[i].tagInput.selectedTags
+			});
 		}
-
-		body.append('posts', JSON.stringify(allPosts))
-
-		const request = new XMLHttpRequest()
-		request.open('POST', '/api/posts/new', true)
-		request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-		request.responseType = 'json'
-
-		request.upload.addEventListener('progress', ev => {
-			let progress = (ev.loaded / ev.total) * 100
-			console.log(`Upload progress: ${progress}%`)
-			// setUploadProgress(progress)
+		console.log(JSON.stringify({ posts: body }))
+		fetch('/api/posts/updateMany', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ posts: body })
 		})
+		.then(response => response.json())
+		.then(data => console.log(data))
+		.catch(err => console.error(err))
+	}
 
-		request.onload = () => {
-			// showProgressBar(false)
-	
-			if(request.status == 200 && request.response.success)
-				document.location.href = '/posts'
-			else
-				setError(request.response.error)
-		}
-
-		request.send(body)
+	function deletePost(postID) {
+		fetch(`/api/posts/${postID}`, { method: 'DELETE' })
+			.then(response => response.json())
+			.then(data => {
+				if(!data.success)
+					console.log(data);
+			})
+			.catch(err => console.error(err));
 	}
 
 	function setError(msg) {
@@ -185,7 +217,7 @@ if(session == null)
 
 		btnCreate.disabled = true;
 
-		btnCreate.addEventListener('click', createPost);
+		btnCreate.addEventListener('click', updatePosts);
 		inputFiles.addEventListener('change', onFilesChange);
 	}
 

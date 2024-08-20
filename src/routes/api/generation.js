@@ -1,5 +1,8 @@
+const fs = require('fs')
 const express = require('express')
 const auth = require('../../middleware/auth')
+const Post = require('../../models/post')
+const { PostMediaDirectory } = require('../api/posts')
 
 const router = express.Router()
 
@@ -41,23 +44,13 @@ const CheckLLMAvailable = async () =>
 }
 try { CheckLLMAvailable() } catch {}
 
-/*
-	Uses Ollama as image classification to get a list of recommended tags.
-*/
-router.post('/tags', auth, async (req, res) =>
-{
-	if(!LLM.enabled)
-		return res.status(500).json({ error: 'Image recognition is not enabled on this instance' })
-
-	if(![ 'image/jpeg', 'image/png', 'image/webp' ].includes(req.headers['content-type']))
-		return res.status(404).json({ error: 'Only png and jpeg image formats are supported' })
-
+async function generateTags(req, res, imageBase64) {
 	const response = await fetch(`${LLM.API}/api/generate`, {
 		method: 'POST',
 		body: JSON.stringify({
 			model: LLM.model,
 			prompt: LLM.prompt,
-			images: [ req.body.toString('base64') ],
+			images: [ imageBase64 ],
 			stream: false // Get single response
 		}) 
 	})
@@ -74,6 +67,41 @@ router.post('/tags', auth, async (req, res) =>
 	tags = tags.map(x => x.trim().replaceAll(' ', '-'))
 
 	return res.json({ success: true, tags })
+}
+
+/*
+	Gets tags for specific post.
+	Uses Ollama as image classification to get a list of recommended tags.
+*/
+router.get('/tags/:id', auth, async (req, res) => {
+	if(!LLM.enabled)
+		return res.status(500).json({ error: 'Image recognition is not enabled on this instance' })
+
+	let post = await Post.findById(req.params.id)
+	if(!post)
+		return res.status(404).send({ error: 'Post not found' })
+
+	fs.readFile(`${PostMediaDirectory}/${post.filepath}`, (err, data) => {
+		if(err) {
+			console.error(`Failed to get post media`, err);
+			return res.status(500).json({ error: `Failed to get post media - ${err}` })
+		}
+
+		generateTags(req, res, data.toString('base64'));
+	})
+})
+
+/*
+	Uses Ollama as image classification to get a list of recommended tags.
+*/
+router.post('/tags', auth, async (req, res) => {
+	if(!LLM.enabled)
+		return res.status(500).json({ error: 'Image recognition is not enabled on this instance' })
+
+	if(![ 'image/jpeg', 'image/png', 'image/webp' ].includes(req.headers['content-type']))
+		return res.status(404).json({ error: 'Only png and jpeg image formats are supported' })
+
+	return await generateTags(req, res, req.body.toString('base64'))
 })
 
 module.exports = router

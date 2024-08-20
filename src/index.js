@@ -46,7 +46,7 @@ app.use(expressSession({
 
 // Routing
 app.use('/api/tags', require('./routes/api/tags'))
-app.use('/api/posts', require('./routes/api/posts'))
+app.use('/api/posts', require('./routes/api/posts').Router)
 app.use(require('./routes/api/login'))
 app.use('/api/user', require('./routes/api/user'))
 app.use('/api/generate', require('./routes/api/generation'))

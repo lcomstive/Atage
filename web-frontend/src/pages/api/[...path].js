@@ -17,3 +17,9 @@ export const POST = async ({ url, request }) => {
 	const apiPath = `${APIAddress}${pathname}${url.search}`
 	return fetch(apiPath, request);
 }
+
+export const DELETE = async ({ url, request }) => {
+	let pathname = url.pathname.substring('/api'.length)
+	const apiPath = `${APIAddress}${pathname}${url.search}`
+	return fetch(apiPath, request);
+}

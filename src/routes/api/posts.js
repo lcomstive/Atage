@@ -68,16 +68,16 @@ router.post('/new', auth, async (req, res) =>
 		req.files.media = [req.files.media]
 
 	let allTags = []
+	let postIDs = []
 
 	for(let i = 0; i < req.files?.media.length ?? 0; i++)
 	{
-		console.log(req.files.media[i].name)
-
 		let post = await Post.create({
 			author: req.session.userID,
 			public: posts[i].public ?? true,
 			description: posts[i].description ?? ''
 		})
+		postIDs.push(post._id)
 
 		// Tags
 		post.tags = []
@@ -137,25 +137,30 @@ router.post('/new', auth, async (req, res) =>
 	for(let i = 0; i < allTags.length; i++)
 		updateTagPostCount(allTags[i])
 		
-	res.json({ success: true })
+	res.json({ success: true, postIDs })
 })
 
 // Update post
-router.post('/:id/update', async (req, res) =>
+const updatePost = async (id, data) =>
 {
-	let post = await Post.findById(req.params.id)
+	let post = await Post.findById(id)
+	if(!post)
+	{
+		console.error(`Tried to update post '${id}', but ID not found`)
+		return
+	}
 
-	post.public = req.body.public ?? true
-	post.description = req.body.description ?? ''
+	post.public = data.public ?? true
+	post.description = data.description ?? ''
 
 	let allTags = post.tags
 
 	post.tags = []
-	for(let i = 0; i < req.body.tags?.length; i++)
+	for(let i = 0; i < data.tags?.length; i++)
 	{
-		let tag = await Tag.findOne({ name: req.body.tags[i].toLowerCase() })
+		let tag = await Tag.findOne({ name: data.tags[i].toLowerCase() })
 		if(!tag)
-			tag = await Tag.create({ name: req.body.tags[i].toLowerCase() })
+			tag = await Tag.create({ name: data.tags[i].toLowerCase() })
 
 		post.tags.push(tag._id)
 
@@ -167,7 +172,22 @@ router.post('/:id/update', async (req, res) =>
 
 	for(let i = 0; i < allTags.length; i++)
 		updateTagPostCount(allTags[i])
+}
 
+router.post('/:id/update', async (req, res) =>
+{
+	await updatePost(req.params.id, req.body)
+	res.send({ success: true })
+})
+
+router.post('/updateMany', async (req, res) => {
+	console.log(JSON.stringify(req.body))
+	for(let i = 0; i < req.body.posts?.length; i++)
+	{
+		console.log(`Updating post: ${JSON.stringify(req.body.posts[i])}`)
+		try { await updatePost(req.body.posts[i].id, req.body.posts[i]) }
+		catch(err) { console.error(err) }
+	}
 	res.send({ success: true })
 })
 
@@ -269,4 +289,8 @@ router.get('/', async (req, res) =>
 	return res.json(posts)
 })
 
-module.exports = router
+module.exports = {
+	Router: router,
+
+	PostMediaDirectory
+}
