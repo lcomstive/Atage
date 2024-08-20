@@ -24,7 +24,8 @@ export async function fetchAuth(url, astroRequest, options = {}) {
 export function getSession() { return session; }
 
 export async function refreshSession(req) { 
-	const response = await fetchAuth(`${APIAddress}/session`, req);
+	const response = await fetchAuth(`${APIAddress}/session`, req)
+							.catch(err => console.error(err));
 
 	const status = response.status;
 	if(status != 200)

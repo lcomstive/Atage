@@ -1,0 +1,148 @@
+---
+import { Icon } from 'astro-icon/components';
+import Layout from '../../../layouts/Layout.astro';
+import TagsInput from '../../../components/TagsInput.astro';
+import { fetchAuth, getSession } from '../../../scripts/Authenticate';
+import Horizontal from '../../../components/Horizontal.astro';
+
+const postID = Astro.params.id;
+const response = await fetchAuth(`/posts/${postID}`, Astro.request);
+const post = await response.json();
+
+if(post.error) {
+	console.log(`Error getting post, redirecting - ${post.error}`)
+	return Astro.redirect('/');
+}
+
+const session = await getSession();
+if(session?.id != post.author)
+	return Astro.redirect(`/posts/${post._id}`);
+---
+
+<Layout title='Post'>
+	<div class="editPostContainer" data-post={JSON.stringify(post)}>
+		<img src={`/api/posts/${postID}/img`} alt='Post media' />
+
+		<TagsInput addButton={true} tags={post.tagData} />
+
+		<textarea id="postDescription" placeholder="Description">{ post.description }</textarea>
+		<Horizontal>
+			Public
+			<input type="checkbox" class="postPublic" />
+		</Horizontal>
+
+		<Horizontal style="justify-content: space-between;">
+			<button class="secondary lightest" id="btnCancel"><Icon name="mingcute:arrow-left-fill" /></button>
+			<button class="primary" id="btnUpdate">Save</button>
+			<button class="error lightest" id="btnDelete"><Icon name="mingcute:delete-2-fill" /></button>
+		</Horizontal>
+	</div>
+</Layout>
+
+<script>
+	import { TagInput } from "../../../components/TagsInput";
+	import { navigate } from "astro:transitions/client";
+
+	let tagsInput, post
+
+	let elements = {}
+
+	function updatePost() {
+		console.log(`Updating post ${post._id}...`);
+
+		fetch(`/api/posts/${post._id}/update`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				id: post._id,
+				tags: tagsInput.selectedTags,
+				description: elements.description.value,
+				public: elements.public.checked
+			})
+		})
+		.then(response => response.json())
+		.then(data => {
+			if(data.error)
+				return console.error(data.error);
+			else if(data.success)
+				window.history.go(-1);
+		})
+		.catch(err => console.error(err));
+	}
+
+	function deletePost() {
+		fetch(`/api/posts/${post._id}`, { method: 'DELETE' })
+			.then(() => navigate('/posts'))
+			.catch(err => console.error(err));
+	}
+
+	function setup() {
+		let postContainer = document.getElementsByClassName('editPostContainer')[0];
+		if(!postContainer)
+			return;
+
+		post = JSON.parse(postContainer.dataset.post);
+
+		elements = {
+			description: document.getElementById('postDescription'),
+			public: postContainer.getElementsByClassName('postPublic')[0],
+			tags: postContainer.getElementsByClassName('tagsInput')[0]
+		};
+
+		elements.public.checked = post.public;
+
+		// Tags Input //	
+		tagsInput = new TagInput(elements.tags);
+		tagsInput.addTags(post.tagData.map(x => x.name));
+		tagsInput.generateSuggestedTags(post._id);
+
+		// Button Events //
+		elements.updateButton = document.getElementById('btnUpdate');
+		elements.updateButton.addEventListener('click', updatePost);
+
+		document.getElementById('btnCancel').addEventListener('click', () => window.history.go(-1));
+		document.getElementById('btnDelete').addEventListener('click', deletePost);
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>
+
+<style>
+	.editPostContainer {
+		max-width: 800px;
+		display: flex;
+		justify-content: center;
+		flex-direction: column;
+		gap: 20px;
+		margin: 0 auto;
+	}
+
+	img {
+		border-radius: var(--rounding);
+		width: 100%;
+		height: auto;
+		max-width: 800px;
+		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
+	}
+
+	#btnUpdate {
+		flex-grow: 1;
+		margin: 0 20px;
+	}
+
+	button > svg { font-size: 1.25em; }
+
+	#btnCancel, #btnDelete { padding-bottom: 6px; }
+
+	:global(.horizontal):has(#btnUpdate) { flex-wrap: wrap; }
+
+	@media screen and (max-width: 450px) {
+		#btnUpdate { margin: 0; }
+		
+		#btnDelete {
+			margin-top: 35px;
+			width: 100%;
+		}
+	}
+</style>

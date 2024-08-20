@@ -1,49 +1,37 @@
 ---
+import { Icon } from 'astro-icon/components';
 import Layout from '../layouts/Layout.astro';
-import Card from '../components/Card.astro';
+import { APIAddress } from '../scripts/API';
+import Vertical from '../components/Vertical.astro';
+import Post from '../components/Post.astro';
+
+const postsRequest = await fetch(`${APIAddress}/posts?count=4`, { headers: { 'Accept': 'application/json' } });
+const posts = await postsRequest.json();
 ---
 
 <Layout title="Home">
-	<main>
-		<h1>Welcome to <span class="text-gradient">test page</span></h1>
-		<p class="instructions">
-			To get started, open the directory <code>src/pages</code> in your project.<br />
-			<strong>Code Challenge:</strong> Tweak the "Welcome to Astro" message above.
-		</p>
-		<ul role="list" class="link-card-grid">
-			<Card
-				href="https://docs.astro.build/"
-				title="Documentation"
-				body="Learn how Astro works and explore the official API docs."
-			/>
-			<Card
-				href="https://astro.build/integrations/"
-				title="Integrations"
-				body="Supercharge your project with new frameworks and libraries."
-			/>
-			<Card
-				href="https://astro.build/themes/"
-				title="Themes"
-				body="Explore a galaxy of community-built starter themes."
-			/>
-			<Card
-				href="https://astro.build/chat/"
-				title="Community"
-				body="Come say hi to our amazing Discord community. ❤️"
-			/>
-		</ul>
-	</main>
+	<Vertical class="homepageContent">
+		<h1>Welcome to <span class="text-gradient">Atage</span></h1>
+		
+		<h3>Recent Posts</h3>
+		<div class="recentPosts">
+			{posts.map(post => (
+				<a href={`/posts/${post._id}`}>
+					<Post post={post} useThumbnail={true} />
+				</a>
+			))}
+		</div>
+		<a href="/posts" class="seeMore primary">See more <Icon name="mingcute:arrow-right-fill" /></a>
+
+	</Vertical>
 </Layout>
 
 <style>
-	main {
-		margin: auto;
-		padding: 1rem;
-		width: 800px;
-		max-width: calc(100% - 2rem);
-		font-size: 20px;
-		line-height: 1.6;
+	.homepageContent {
+		max-width: 800px;
+		margin: 0 auto;
 	}
+
 	.astro-a {
 		position: absolute;
 		top: -32px;
@@ -53,6 +41,7 @@ import Card from '../components/Card.astro';
 		height: auto;
 		z-index: 10;
 	}
+
 	h1 {
 		font-size: 4rem;
 		font-weight: 700;
@@ -60,6 +49,13 @@ import Card from '../components/Card.astro';
 		text-align: center;
 		margin-bottom: 1em;
 	}
+
+	h3 {
+		font-size: 2rem;
+		text-align: center;
+		margin-bottom: 0;
+	}
+
 	.text-gradient {
 		background-image: var(--accent-gradient);
 		-webkit-background-clip: text;
@@ -67,28 +63,44 @@ import Card from '../components/Card.astro';
 		background-size: 400%;
 		background-position: 0%;
 	}
-	.instructions {
-		margin-bottom: 2rem;
-		border: 1px solid rgba(var(--accent-light), 25%);
-		background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
-		padding: 1.5rem;
-		border-radius: 8px;
+
+	.recentPosts {
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		padding-bottom: 20px;
+		justify-content: space-evenly;
 	}
-	.instructions code {
-		font-size: 0.8em;
-		font-weight: bold;
-		background: rgba(var(--accent-light), 12%);
-		color: rgb(var(--accent-light));
-		border-radius: 4px;
-		padding: 0.3em 0.4em;
+
+	.recentPosts .post {
+		position: relative;
+		height: 300px;
+		flex-grow: 1;
+		transition: opacity 0.1s ease-in-out;
 	}
-	.instructions strong {
-		color: rgb(var(--accent-light));
+	
+	.recentPosts img {
+		cursor: pointer;
+		min-width: 100%;
+		max-height: 100%;
+		object-fit: cover;
+		vertical-align: bottom;
+		border-radius: var(--rounding);
+		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
+
+		transition: opacity 0.2s ease-in-out;
 	}
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
+
+	.seeMore {
+		color: white;
+		width: auto;
+		text-decoration: none;
+		padding: 10px 30px;
+		margin: 0 auto !important;
+	}
+
+	.seeMore:hover {
+		color: white;
 	}
 </style>

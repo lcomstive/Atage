@@ -4,10 +4,11 @@ import { Icon } from 'astro-icon/components';
 import Horizontal from './Horizontal.astro';
 
 interface Props {
-	addButton?: Boolean
+	addButton?: Boolean,
+	tags?: []
 }
 
-const { addButton } = Astro.props;
+const { addButton, tags } = Astro.props;
 ---
 
 <div class="tagsInput">
@@ -17,7 +18,9 @@ const { addButton } = Astro.props;
 		{addButton && <Icon name="mingcute:arrow-right-circle-fill" class="tagsAdd" />}
 	</Horizontal>
 	<ul class="tagsInputResults"></ul> <!-- Autocomplete results -->
-	<div class="tagsInputSelected"><Tag name="Test" /></div> <!-- Selected tags -->
+	<div class="tagsInputSelected"></div> <!-- Selected tags -->
+
+	<template><Tag name="template" /></template>
 </div>
 
 <script src="./TagsInput.js"></script>

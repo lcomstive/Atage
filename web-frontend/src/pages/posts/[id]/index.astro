@@ -1,0 +1,82 @@
+---
+import { Icon } from 'astro-icon/components';
+import Horizontal from '../../../components/Horizontal.astro';
+import Tag from '../../../components/Tag.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { fetchAuth, getSession } from '../../../scripts/Authenticate';
+import Post from '../../../components/Post.astro';
+
+const postID = Astro.params.id;
+const response = await fetchAuth(`/posts/${postID}`, Astro.request);
+const post = await response.json();
+
+if(post.error) {
+	console.log(`Error getting post, redirecting - ${post.error}`)
+	return Astro.redirect('/');
+}
+
+const session = await getSession();
+const isAuthor = session?.id == post.author
+---
+
+<Layout title='Posts'>
+	<div class="postContainer">
+		<Post post={post}
+				style="cursor: pointer"
+				onclick={`document.location.href='/api/posts/${postID}/img'`} />
+
+		<div class="tags">
+			<a class="primary light tag"><span style="opacity: 0.75">Poster:</span> {post.authorName}</a>
+			{post.tagData && post.tagData.map(tag => (
+				<Tag name={tag.name} postCount={tag.postCount} href={`/posts?tags=${tag.name}`} />
+			))}
+		</div>
+
+		<p>{ post.description }</p>
+
+		<br>
+
+		<Horizontal style="justify-content: space-between">
+			<button onclick="window.history.go(-1)" class="secondary lightest"><Icon name="mingcute:arrow-left-fill" /> Back</button>
+			{ isAuthor && <button class="secondary lightest" id="btnEditPost" data-postid={post._id}>Edit <Icon name="mingcute:edit-2-fill" /></button> }
+		</Horizontal>
+	</div>
+</Layout>
+
+<script>
+	import { navigate } from "astro:transitions/client";
+
+	function setup() {
+		let btnEdit = document.getElementById('btnEditPost');
+		if(btnEdit)
+			btnEdit.addEventListener('click', () => navigate(`/posts/${btnEdit.dataset.postid}/edit`));
+	}
+
+	setup();
+	document.addEventListener('astro:after-swap', setup);
+</script>
+
+<style>
+	.postContainer {
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+	}
+
+	:global(img) {
+		border-radius: var(--rounding);
+		width: 100%;
+		height: auto;
+		max-width: 800px;
+		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
+	}
+
+	button svg {
+		margin-bottom: -2px;
+	}
+</style>

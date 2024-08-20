@@ -1,6 +1,10 @@
 const MinTagLength = 0 // Minimum characters to begin searching tags
 const TagInputRegex = new RegExp('^[0-9a-zA-Z\-\_\(\)\:]*$');
 const TagTemplate = `<a class="tag" data-tagname="{name}" data-action="remove">{name}</a>`;
+const SuggestedTagTemplate =   `<a class="tag suggested" data-action="suggested" data-tagname="{name}">
+									{name}
+									<span data-tooltip="This tag was suggested. Click to add!" data-flow="bottom">✨</span>
+								</a>`;
 const TagsEventName = 'tagsChanged';
 
 export class TagInput {
@@ -14,6 +18,7 @@ export class TagInput {
 		};
 
 		this.selectedTags = [];
+		this.suggestedTags = [];
 		this.highlightedTag = null;
 		this.showingAutocomplete = false;
 		this.allowNewTags = allowNewTags || this.fields.add;
@@ -102,10 +107,28 @@ export class TagInput {
 		this.container.dispatchEvent(new CustomEvent(TagsEventName, { detail: this.selectedTags }));
 	}
 
+	generateSuggestedTags(postID) {
+		fetch(`/api/generate/tags/${postID}`)
+			.then(response => response.json())
+			.then(data => {
+				if(data.error)
+					return console.error(`Failed to generate suggested tags - ${data.error}`);
+				else if(!data.success)
+					return console.error(`Failed to generate suggest tags - unknown error`);
+
+				this.suggestedTags = data.tags.filter(x => !this.selectedTags.includes(x));
+				this.#refreshSelectedList();
+			})
+			.catch(err => console.error(err));
+	}
+
 	#refreshSelectedList() {
 		this.fields.selected.innerHTML = '';
 		for(let i = 0; i < this.selectedTags.length; i++)
 			this.fields.selected.innerHTML += TagTemplate.replaceAll('{name}', this.selectedTags[i]);
+
+		for(let i = 0; i < this.suggestedTags.length; i++)
+			this.fields.selected.innerHTML += SuggestedTagTemplate.replaceAll('{name}', this.suggestedTags[i]);
 	}
 
 	#beginSearch() {
@@ -142,7 +165,7 @@ export class TagInput {
 			case 9: // TAB
 				if(this.highlightedTag >= 0)
 					this.#onTagClicked({ target: this.fields.results.children[this.highlightedTag] });
-				else if(this.fields.results.childElementCount > 0) // Use first element in search results
+				else if(this.fields.results.childElementCount > 0 && this.showingAutocomplete) // Use first element in search results
 					this.#onTagClicked({ target: this.fields.results.firstElementChild });
 				else
 					break;
@@ -203,6 +226,12 @@ export class TagInput {
 				this.addTag(tag);
 				this.closeAutocomplete();
 				this.fields.input.value = '';
+				this.highlightedTag = -1;
+				break;
+			case 'suggested':
+				this.suggestedTags.splice(this.suggestedTags.indexOf(tag), 1);
+
+				this.addTag(tag);
 				break;
 		}
 	}

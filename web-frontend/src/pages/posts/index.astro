@@ -5,6 +5,7 @@ import { fetchAuth, getSession } from '../../scripts/Authenticate'
 import Vertical from '../../components/Vertical.astro';
 import TagsInput from '../../components/TagsInput.astro';
 import Horizontal from '../../components/Horizontal.astro';
+import Post from '../../components/Post.astro';
 
 let apiURL = '/posts'
 if(Astro.url.searchParams.has('tags'))
@@ -31,13 +32,8 @@ const session = await getSession();
 		</Horizontal>
 		<TagsInput transition:persist />
 
-		<div class="postsContainer">
-			{posts.map(post => (
-				<a href={`/posts/${post._id}`} class="hide">
-					<img src={`/api/posts/${post._id}/thumbnail`} />
-					{ post.isVideo && <Icon name={'mingcute:video-fill'} class={'videoIcon'} /> }
-				</a>
-			))}
+		<div class="allPostsContainer">
+			{posts.map(post => <a href={`/posts/${post._id}`}><Post post={post} useThumbnail={true} data-postid={post._id} /></a> )}
 			{posts.length > 0 && <div />} <!-- Additional div to reduce stretching on last row -->
 		</div>
 	</Vertical>
@@ -60,6 +56,10 @@ const session = await getSession();
 	}
 
 	function setup() {
+		let allPostsContainer = document.getElementsByClassName('allPostsContainer')[0];
+		if(!allPostsContainer)
+			return;
+		
 		let tagInputEl = document.getElementsByClassName('tagsInput')[0]
 		if(!tagInputEl)
 			return;
@@ -71,11 +71,6 @@ const session = await getSession();
 
 		// Response to tag change events
 		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
-		
-		// Remove the 'hide' class from posts, to fade them in
-		let postsContainer = document.getElementsByClassName('postsContainer')[0];
-		for(let i = 0; i < postsContainer.childElementCount; i++)
-			postsContainer.children[i].classList.remove('hide');
 	}
 
 	setup();
@@ -83,7 +78,7 @@ const session = await getSession();
 </script>
 
 <style is:inline>
-	.postsContainer {
+	.allPostsContainer {
 		width: 100%;
 		display: flex;
 		flex-wrap: wrap;
@@ -91,45 +86,23 @@ const session = await getSession();
 		padding-bottom: 20px;
 	}
 
-	.postsContainer > a {
+	.allPostsContainer .post {
 		position: relative;
 		height: 300px;
 		flex-grow: 1;
 		transition: opacity 0.1s ease-in-out;
 	}
 	
-	.postsContainer img {
+	.allPostsContainer img {
 		cursor: pointer;
 		min-width: 100%;
 		max-height: 100%;
 		object-fit: cover;
 		vertical-align: bottom;
 		border-radius: var(--rounding);
+		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
 
 		transition: opacity 0.2s ease-in-out;
-	}
-
-	.postsContainer .hide img { opacity: 0; }
-
-	.videoIcon {
-		position: absolute;
-		top: 5px; left: 5px;
-		width: 35px;
-		height: 35px;
-
-		padding: 5px;
-		opacity: 0.6;
-		border-radius: var(--rounding);
-		
-		color: rgba(var(--accent));
-		background: rgba(var(--secondary));
-		border: 1.5px solid rgba(var(--accent));
-	}
-
-	.dark .videoIcon {
-		color: white;
-		border-color: rgba(var(--secondary));
-		background: rgba(var(--secondary), 0.5);
 	}
 
 	#topBar {
@@ -160,14 +133,14 @@ const session = await getSession();
 	}
 
 	@media screen and (max-aspect-ratio: 1/1) {
-		.postsContainer > a {
+		.allPostsContainer > .post {
 			height: 200px;
 		}
 	}
 
 	/* Mobile */
 	@media screen and (max-width: 450px) {
-		.postsContainer > a {
+		.allPostsContainer > .post {
 			width: 100%;
 			height: auto;
 			display: flex;

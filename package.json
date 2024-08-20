@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon .",
 	"web:dev": "npm --prefix web-frontend run dev",
-	"web:build": "npm --prefix web-frontend run build"
+	"web:build": "npm --prefix web-frontend run build",
+	"web:run": "npm run web:build && node ./web-frontend/dist/server/entry.mjs"
   },
   "author": "",
   "license": "ISC",

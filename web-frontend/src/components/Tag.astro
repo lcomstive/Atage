@@ -1,14 +1,13 @@
 ---
 interface Props {
 	name: String,
-	tagClick?: string,
 	postCount?: Number
 }
 
-const { name, tagClick, postCount } = Astro.props;
+const { name, postCount, ...attrs } = Astro.props;
 ---
 
-<a class="tag" onclick={tagClick}>
+<a class="tag" {...attrs}>
 	{name}
 	{ postCount && <span class="postCount">({postCount})</span>}
 </a>
@@ -22,6 +21,7 @@ const { name, tagClick, postCount } = Astro.props;
 		padding: 7.5px 12.5px;
 		border-radius: var(--rounding);
 		text-wrap: nowrap;
+		position: relative;
 		
 		gap: 10px;
 		display: flex;
@@ -41,6 +41,29 @@ const { name, tagClick, postCount } = Astro.props;
 	}
 
 	.tag .postCount { color: rgba(var(--accent), 0.5); }
+
+	.tag.suggested {
+		opacity: 0.75;
+		background: linear-gradient(45deg, rgba(var(--accent), 0.2), transparent, rgba(var(--accent), 0.25));
+	}
+
+	.tag.suggested:hover {
+		opacity: 1;
+		background: linear-gradient(45deg, rgba(var(--accent), 0.3), transparent, rgba(var(--accent), 0.3));
+	}
+
+	.tag .tooltipText {
+		position: absolute;
+		color: white;
+		background: rgba(var(--accent));
+
+		max-width: 150px;
+		text-wrap: wrap;
+	}
+
+	.dark .tag .tooltipText {
+
+	}
 
 	/* Dark mode */
 	.dark .tag {
