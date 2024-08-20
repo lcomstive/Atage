@@ -36,6 +36,8 @@ const CheckLLMAvailable = async () =>
 		console.log(`Running LLM model: ${LLM.model}`)
 		LLM.enabled = true
 	}
+	else
+		console.log(`LLM model '${LLM.model}' was not found on Ollama, image recognition is disabled`)
 }
 try { CheckLLMAvailable() } catch {}
 
@@ -65,7 +67,10 @@ router.post('/tags', auth, async (req, res) =>
 
 	const json = await response.json()
 
-	let tags = json.response.split(',')
+	if(json.error)
+		return res.status(500).json({ error: `Failed to get image tags - ${json.error}` })
+
+	let tags = json.response?.split(',') ?? []
 	tags = tags.map(x => x.trim().replaceAll(' ', '-'))
 
 	return res.json({ success: true, tags })
