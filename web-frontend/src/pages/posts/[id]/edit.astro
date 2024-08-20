@@ -20,16 +20,20 @@ if(session?.id != post.author)
 ---
 
 <Layout title='Post'>
-	<div class="editPostContainer" data-id={post._id} data-tags={JSON.stringify(post.tagData.map(x => x.name))}>
+	<div class="editPostContainer" data-post={JSON.stringify(post)}>
 		<img src={`/api/posts/${postID}/img`} alt='Post media' />
 
 		<TagsInput addButton={true} tags={post.tagData} />
 
 		<textarea id="postDescription" placeholder="Description">{ post.description }</textarea>
+		<Horizontal>
+			Public
+			<input type="checkbox" class="postPublic" />
+		</Horizontal>
 
 		<Horizontal style="justify-content: space-between;">
 			<button class="primary lightest" id="btnCancel"><Icon name="mingcute:arrow-left-fill" /></button>
-			<button class="primary" id="btnUpdate">Update</button>
+			<button class="primary" id="btnUpdate">Save</button>
 			<button class="error lightest" id="btnDelete"><Icon name="mingcute:delete-2-fill" /></button>
 		</Horizontal>
 	</div>
@@ -39,34 +43,65 @@ if(session?.id != post.author)
 	import { TagInput } from "../../../components/TagsInput";
 	import { navigate } from "astro:transitions/client";
 
-	let tagsInput, postID
+	let tagsInput, post, postContainer
+
+	let elements = {}
 
 	function updatePost() {
-		console.log(`Updating post ${postID}...`);
+		console.log(`Updating post ${post._id}...`);
+
+		fetch(`/api/posts/${post._id}/update`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				id: post._id,
+				tags: tagsInput.selectedTags,
+				description: elements.description.value,
+				public: elements.public.checked
+			})
+		})
+		.then(response => response.json())
+		.then(data => {
+			if(data.error)
+				return console.error(data.error);
+			else if(!data.success)
+				return;
+
+			let classes = elements.updateButton.className;
+			elements.updateButton.className = 'success';
+			setTimeout(() => elements.updateButton.className  = classes, 600);
+		})
+		.catch(err => console.error(err));
 	}
 
 	function deletePost() {
-		console.log(`Deleting post ${postID}...`);
+		console.log(`Deleting post ${post._id}...`);
 	}
 
 	function setup() {
-		let container = document.getElementsByClassName('editPostContainer')[0];
-		if(!container)
+		let postContainer = document.getElementsByClassName('editPostContainer')[0];
+		if(!postContainer)
 			return;
-		postID = container.dataset.id
 
-		// Tags Input //
-		let tagsInputEl = container.getElementsByClassName('tagsInput')[0];
-		if(!tagsInputEl)
-			return;
-	
-		tagsInput = new TagInput(tagsInputEl);
-		let tags = JSON.parse(container.dataset.tags);
-		tagsInput.addTags(tags);
+		post = JSON.parse(postContainer.dataset.post);
+
+		elements = {
+			description: document.getElementById('postDescription'),
+			public: postContainer.getElementsByClassName('postPublic')[0],
+			tags: postContainer.getElementsByClassName('tagsInput')[0]
+		};
+
+		elements.public.checked = post.public;
+
+		// Tags Input //	
+		tagsInput = new TagInput(elements.tags);
+		tagsInput.addTags(post.tagData.map(x => x.name));
 
 		// Button Events //
-		document.getElementById('btnCancel').addEventListener('click', () => navigate(`/posts/${postID}`));
-		document.getElementById('btnUpdate').addEventListener('click', updatePost);
+		elements.updateButton = document.getElementById('btnUpdate');
+		elements.updateButton.addEventListener('click', updatePost);
+
+		document.getElementById('btnCancel').addEventListener('click', () => navigate(`/posts/${post._id}`));
 		document.getElementById('btnDelete').addEventListener('click', deletePost);
 	}
 

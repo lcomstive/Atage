@@ -27,6 +27,8 @@ const isAuthor = session?.id == post.author
 			))}
 		</div>
 
+		<p>{ post.description }</p>
+
 		<br>
 		<a href={`/api/posts/${postID}/img`}>View original</a>
 
