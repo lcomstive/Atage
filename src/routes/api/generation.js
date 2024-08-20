@@ -64,7 +64,7 @@ async function generateTags(req, res, imageBase64) {
 		return res.status(500).json({ error: `Failed to get image tags - ${json.error}` })
 
 	let tags = json.response?.split(',') ?? []
-	tags = tags.map(x => x.trim().replaceAll(' ', '-'))
+	tags = tags.map(x => x.trim().replaceAll(' ', '-').toLowerCase())
 
 	return res.json({ success: true, tags })
 }
