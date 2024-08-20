@@ -1,7 +1,7 @@
 ---
-import Tag from '../../components/Tag.astro';
-import Layout from '../../layouts/Layout.astro';
-import { fetchAuth } from '../../scripts/Authenticate';
+import Tag from '../../../components/Tag.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { fetchAuth, getSession } from '../../../scripts/Authenticate';
 
 const postID = Astro.params.id;
 const response = await fetchAuth(`/posts/${postID}`, Astro.request);
@@ -11,6 +11,9 @@ if(post.error) {
 	console.log(`Error getting post, redirecting - ${post.error}`)
 	return Astro.redirect('/');
 }
+
+const session = await getSession();
+const isAuthor = session?.id == post.author
 ---
 
 <Layout title='Posts'>
@@ -26,12 +29,15 @@ if(post.error) {
 
 		<br>
 		<a href={`/api/posts/${postID}/img`}>View original</a>
+
+		{ isAuthor && <a href={`/posts/${postID}/edit`} class="editPost">Edit</a> }
 	</div>
 </Layout>
 
 <style>
 	.postContainer {
 		max-width: 800px;
+		margin: 0 auto;
 	}
 
 	.tags {

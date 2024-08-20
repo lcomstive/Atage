@@ -31,7 +31,7 @@ const session = await getSession();
 		</Horizontal>
 		<TagsInput transition:persist />
 
-		<div class="postsContainer">
+		<div class="allPostsContainer">
 			{posts.map(post => (
 				<a href={`/posts/${post._id}`} class="hide">
 					<img src={`/api/posts/${post._id}/thumbnail`} />
@@ -60,6 +60,10 @@ const session = await getSession();
 	}
 
 	function setup() {
+		let allPostsContainer = document.getElementsByClassName('allPostsContainer')[0];
+		if(!allPostsContainer)
+			return;
+		
 		let tagInputEl = document.getElementsByClassName('tagsInput')[0]
 		if(!tagInputEl)
 			return;
@@ -73,9 +77,8 @@ const session = await getSession();
 		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
 		
 		// Remove the 'hide' class from posts, to fade them in
-		let postsContainer = document.getElementsByClassName('postsContainer')[0];
-		for(let i = 0; i < postsContainer.childElementCount; i++)
-			postsContainer.children[i].classList.remove('hide');
+		for(let i = 0; i < allPostsContainer.childElementCount; i++)
+			allPostsContainer.children[i].classList.remove('hide');
 	}
 
 	setup();
@@ -83,7 +86,7 @@ const session = await getSession();
 </script>
 
 <style is:inline>
-	.postsContainer {
+	.allPostsContainer {
 		width: 100%;
 		display: flex;
 		flex-wrap: wrap;
@@ -91,14 +94,14 @@ const session = await getSession();
 		padding-bottom: 20px;
 	}
 
-	.postsContainer > a {
+	.allPostsContainer > a {
 		position: relative;
 		height: 300px;
 		flex-grow: 1;
 		transition: opacity 0.1s ease-in-out;
 	}
 	
-	.postsContainer img {
+	.allPostsContainer img {
 		cursor: pointer;
 		min-width: 100%;
 		max-height: 100%;
@@ -109,7 +112,7 @@ const session = await getSession();
 		transition: opacity 0.2s ease-in-out;
 	}
 
-	.postsContainer .hide img { opacity: 0; }
+	.allPostsContainer .hide img { opacity: 0; }
 
 	.videoIcon {
 		position: absolute;
@@ -160,14 +163,14 @@ const session = await getSession();
 	}
 
 	@media screen and (max-aspect-ratio: 1/1) {
-		.postsContainer > a {
+		.allPostsContainer > a {
 			height: 200px;
 		}
 	}
 
 	/* Mobile */
 	@media screen and (max-width: 450px) {
-		.postsContainer > a {
+		.allPostsContainer > a {
 			width: 100%;
 			height: auto;
 			display: flex;
