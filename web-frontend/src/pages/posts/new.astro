@@ -167,6 +167,8 @@ if(session == null)
 			post.preview.style.opacity = 1;
 			post.upload = null;
 			console.log(`Post ID: ${post.id}`);
+
+			post.tagInput.generateSuggestedTags(post.id);
 		};
 		post.upload.send(body);
 	}
