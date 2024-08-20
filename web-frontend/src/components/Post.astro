@@ -25,11 +25,16 @@ const { post, useThumbnail = false, ...attrs } = Astro.props;
 <style>
 	.post {
 		position: relative;
+		width: fit-content;
+		height: fit-content;
+		margin: 0 auto;
 	}
 
 	.post img, .post video {
 		border-radius: var(--rounding);
 		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
+		width: auto;
+		height: 100%;
 	}
 
 	.videoIcon {

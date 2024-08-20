@@ -3,6 +3,7 @@ import { Icon } from 'astro-icon/components';
 import Layout from '../layouts/Layout.astro';
 import { APIAddress } from '../scripts/API';
 import Vertical from '../components/Vertical.astro';
+import Post from '../components/Post.astro';
 
 const postsRequest = await fetch(`${APIAddress}/posts?count=4`, { headers: { 'Accept': 'application/json' } });
 const posts = await postsRequest.json();
@@ -15,8 +16,8 @@ const posts = await postsRequest.json();
 		<h3>Recent Posts</h3>
 		<div class="recentPosts">
 			{posts.map(post => (
-					<a href={`/posts/${post._id}`} class="post">
-					<img src={`/api/posts/${post._id}/thumbnail`} />
+				<a href={`/posts/${post._id}`}>
+					<Post post={post} useThumbnail={true} />
 				</a>
 			))}
 		</div>
@@ -69,9 +70,10 @@ const posts = await postsRequest.json();
 		flex-wrap: wrap;
 		gap: 10px;
 		padding-bottom: 20px;
+		justify-content: space-evenly;
 	}
 
-	.recentPosts > a {
+	.recentPosts .post {
 		position: relative;
 		height: 300px;
 		flex-grow: 1;
@@ -89,8 +91,6 @@ const posts = await postsRequest.json();
 
 		transition: opacity 0.2s ease-in-out;
 	}
-
-	.recentPosts .hide img { opacity: 0; }
 
 	.seeMore {
 		color: white;
