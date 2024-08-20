@@ -33,7 +33,7 @@ const session = await getSession();
 		<TagsInput transition:persist />
 
 		<div class="allPostsContainer">
-			{posts.map(post => <Post post={post} useThumbnail={true} data-postid={post._id} /> )}
+			{posts.map(post => <a href={`/posts/${post._id}`}><Post post={post} useThumbnail={true} data-postid={post._id} /></a> )}
 			{posts.length > 0 && <div />} <!-- Additional div to reduce stretching on last row -->
 		</div>
 	</Vertical>
@@ -71,14 +71,6 @@ const session = await getSession();
 
 		// Response to tag change events
 		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
-
-		// Set up navigation
-		for(let i = 0; i < allPostsContainer.childElementCount; i++)
-		{
-			let el = allPostsContainer.children[i];
-			let postID = el.dataset.postid;
-			el.addEventListener('click', () => navigate(`/posts/${postID}`));
-		}
 	}
 
 	setup();
@@ -94,7 +86,7 @@ const session = await getSession();
 		padding-bottom: 20px;
 	}
 
-	.allPostsContainer > .post {
+	.allPostsContainer .post {
 		position: relative;
 		height: 300px;
 		flex-grow: 1;
