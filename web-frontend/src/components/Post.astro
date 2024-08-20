@@ -1,0 +1,56 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+	post: object,
+	useThumbnail?: boolean
+}
+
+const { post, useThumbnail = false, ...attrs } = Astro.props;
+---
+
+<div class="post" {...attrs}>
+	{post.isVideo && !useThumbnail &&
+		<video src={`/api/posts/${post._id}/img`} controls></video>
+	}
+	{(!post.isVideo || useThumbnail) &&
+		<img async decoding="async"
+			src={`/api/posts/${post._id}/` + (useThumbnail ? 'thumbnail' : 'img')}
+			alt='Post media'
+		/>
+	}
+	{ post.isVideo && useThumbnail && <Icon name={'mingcute:video-fill'} class="videoIcon" /> }
+</div>
+
+<style>
+	.post {
+		position: relative;
+	}
+
+	.post img, .post video {
+		max-width: 100%;
+		max-height: 100%;
+		border-radius: var(--rounding);
+	}
+
+	.videoIcon {
+		position: absolute;
+		top: 5px; left: 5px;
+		width: 35px;
+		height: 35px;
+
+		padding: 5px;
+		opacity: 0.6;
+		border-radius: var(--rounding);
+		
+		color: rgba(var(--accent));
+		background: rgba(var(--secondary));
+		border: 1.5px solid rgba(var(--accent));
+	}
+
+	:global(.dark) .videoIcon {
+		color: white;
+		border-color: rgba(var(--secondary));
+		background: rgba(var(--secondary), 0.5);
+	}
+</style>

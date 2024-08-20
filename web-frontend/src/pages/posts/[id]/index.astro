@@ -4,6 +4,7 @@ import Horizontal from '../../../components/Horizontal.astro';
 import Tag from '../../../components/Tag.astro';
 import Layout from '../../../layouts/Layout.astro';
 import { fetchAuth, getSession } from '../../../scripts/Authenticate';
+import Post from '../../../components/Post.astro';
 
 const postID = Astro.params.id;
 const response = await fetchAuth(`/posts/${postID}`, Astro.request);
@@ -20,11 +21,9 @@ const isAuthor = session?.id == post.author
 
 <Layout title='Posts'>
 	<div class="postContainer">
-		<img
-			src={`/api/posts/${postID}/img`}
-			alt='Post media'
-			style="cursor: pointer"
-			onclick={`document.location.href='/api/posts/${postID}/img'`} />
+		<Post post={post}
+				style="cursor: pointer"
+				onclick={`document.location.href='/api/posts/${postID}/img'`} />
 
 		<div class="tags">
 			<a class="primary light tag"><span style="opacity: 0.75">Poster:</span> {post.authorName}</a>
