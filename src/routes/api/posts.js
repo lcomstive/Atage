@@ -229,6 +229,7 @@ router.get('/:id/thumbnail', async (req, res) => {
 // Get posts
 router.get('/', async (req, res) =>
 {
+	// Tags //
 	let tagsRaw = req.query.tags ?? null
 
 	if(tagsRaw)
@@ -243,6 +244,7 @@ router.get('/', async (req, res) =>
 			tags.push(tag._id)
 	}
 
+	// Query //
 	let query = { $or: [
 		{ public: true },
 		{ author: req.session?.userID }
@@ -251,7 +253,16 @@ router.get('/', async (req, res) =>
 	if(tags.length > 0)
 		query.$and = [{ tags: { $all: tags } }]
 
-	let posts = await Post.find(query);
+	// Pagination //
+	const pageCount = req.query.count ?? process.env.DEFAULT_API_POST_COUNT ?? 50
+	const pageIndex = req.query.page ?? 0
+	const pagination = {
+		limit: pageCount,
+		skip: pageIndex * pageCount
+	}
+		
+	// Get Posts //
+	let posts = await Post.find(query, null, pagination);
 	for(let i = 0; i < posts.length; i++)
 		posts[i] = await addPostMeta(posts[i], req)
 
