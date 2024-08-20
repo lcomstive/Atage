@@ -2,41 +2,35 @@
 import { Icon } from 'astro-icon/components';
 import Layout from '../layouts/Layout.astro';
 import { APIAddress } from '../scripts/API';
-import Horizontal from '../components/Horizontal.astro';
+import Vertical from '../components/Vertical.astro';
 
-const postsRequest = await fetch(`${APIAddress}/posts?count=5`, { headers: { 'Accept': 'application/json' } });
+const postsRequest = await fetch(`${APIAddress}/posts?count=4`, { headers: { 'Accept': 'application/json' } });
 const posts = await postsRequest.json();
 ---
 
 <Layout title="Home">
-	<main>
+	<Vertical class="homepageContent">
 		<h1>Welcome to <span class="text-gradient">Atage</span></h1>
 		
 		<h3>Recent Posts</h3>
 		<div class="recentPosts">
-			<Horizontal>
-				{posts.map(post => (
-						<a href={`/posts/${post._id}`} class="post">
-						<img src={`/api/posts/${post._id}/thumbnail`} />
-					</a>
-				))}
-			</Horizontal>
-
-			<a href="/posts" class="seeMore">See more <Icon name="mingcute:arrow-right-fill" /></a>
+			{posts.map(post => (
+					<a href={`/posts/${post._id}`} class="post">
+					<img src={`/api/posts/${post._id}/thumbnail`} />
+				</a>
+			))}
 		</div>
+		<a href="/posts" class="seeMore primary">See more <Icon name="mingcute:arrow-right-fill" /></a>
 
-	</main>
+	</Vertical>
 </Layout>
 
 <style>
-	main {
-		margin: auto;
-		padding: 1rem;
-		width: 800px;
-		max-width: calc(100% - 2rem);
-		font-size: 20px;
-		line-height: 1.6;
+	.homepageContent {
+		max-width: 800px;
+		margin: 0 auto;
 	}
+
 	.astro-a {
 		position: absolute;
 		top: -32px;
@@ -46,6 +40,7 @@ const posts = await postsRequest.json();
 		height: auto;
 		z-index: 10;
 	}
+
 	h1 {
 		font-size: 4rem;
 		font-weight: 700;
@@ -53,6 +48,13 @@ const posts = await postsRequest.json();
 		text-align: center;
 		margin-bottom: 1em;
 	}
+
+	h3 {
+		font-size: 2rem;
+		text-align: center;
+		margin-bottom: 0;
+	}
+
 	.text-gradient {
 		background-image: var(--accent-gradient);
 		-webkit-background-clip: text;
@@ -62,10 +64,43 @@ const posts = await postsRequest.json();
 	}
 
 	.recentPosts {
-		
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		padding-bottom: 20px;
 	}
 
-	.post img {
+	.recentPosts > a {
+		position: relative;
+		height: 300px;
+		flex-grow: 1;
+		transition: opacity 0.1s ease-in-out;
+	}
+	
+	.recentPosts img {
+		cursor: pointer;
+		min-width: 100%;
+		max-height: 100%;
+		object-fit: cover;
+		vertical-align: bottom;
 		border-radius: var(--rounding);
+		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
+
+		transition: opacity 0.2s ease-in-out;
+	}
+
+	.recentPosts .hide img { opacity: 0; }
+
+	.seeMore {
+		color: white;
+		width: auto;
+		text-decoration: none;
+		padding: 10px 30px;
+		margin: 0 auto !important;
+	}
+
+	.seeMore:hover {
+		color: white;
 	}
 </style>

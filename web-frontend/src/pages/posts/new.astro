@@ -226,8 +226,17 @@ import { TagInput } from "../../components/TagsInput";
 		inputFiles.addEventListener('change', onFilesChange);
 	}
 
+	function leavingPage() {
+		if(!newPostsContainer) return;
+		
+		// Temporary posts, they need to be removed - haven't been saved
+		for(let i = 0; i < posts.length; i++)
+			deletePost(posts[i].id);
+	}
+	
 	setup();
 	document.addEventListener('astro:after-swap', setup);
+	document.addEventListener('astro:before-preparation', leavingPage);
 </script>
 
 <style is:global>

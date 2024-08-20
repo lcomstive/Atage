@@ -32,7 +32,7 @@ if(session?.id != post.author)
 		</Horizontal>
 
 		<Horizontal style="justify-content: space-between;">
-			<button class="primary lightest" id="btnCancel"><Icon name="mingcute:arrow-left-fill" /></button>
+			<button class="secondary lightest" id="btnCancel"><Icon name="mingcute:arrow-left-fill" /></button>
 			<button class="primary" id="btnUpdate">Save</button>
 			<button class="error lightest" id="btnDelete"><Icon name="mingcute:delete-2-fill" /></button>
 		</Horizontal>
@@ -123,6 +123,7 @@ if(session?.id != post.author)
 		width: 100%;
 		height: auto;
 		max-width: 800px;
+		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
 	}
 
 	#btnUpdate {
