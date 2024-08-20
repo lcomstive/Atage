@@ -29,6 +29,8 @@ const app = new express()
 app.use(expressEdge)
 app.use(compression())
 app.use(bodyParser.json())
+app.use(bodyParser.text({ type: 'text/*' }))
+app.use(bodyParser.raw({ type: 'image/*', limit: '30MB' }))
 app.use(express.static('public'))
 app.set('views', __dirname + '/views')
 app.use(fileUpload({ createParentPath: true }))
@@ -46,7 +48,8 @@ app.use(expressSession({
 app.use('/api/tags', require('./routes/api/tags'))
 app.use('/api/posts', require('./routes/api/posts'))
 app.use(require('./routes/api/login'))
-app.use('/api/user', require('./routes/api/user'));
+app.use('/api/user', require('./routes/api/user'))
+app.use('/api/generate', require('./routes/api/generation'))
 
 const loginRoutes = require('./routes/login')
 app.get('/login', loginRoutes.login)
