@@ -28,7 +28,7 @@ const isAuthor = session?.id == post.author
 		<div class="tags">
 			<a class="primary light tag"><span style="opacity: 0.75">Poster:</span> {post.authorName}</a>
 			{post.tagData && post.tagData.map(tag => (
-				<Tag name={tag.name} postCount={tag.postCount} tagClick={`document.location.href='/posts?tags=${tag.name}'`} />
+				<Tag name={tag.name} postCount={tag.postCount} href={`/posts?tags=${tag.name}`} />
 			))}
 		</div>
 
