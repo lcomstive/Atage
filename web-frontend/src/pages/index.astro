@@ -25,12 +25,13 @@ const tags = await tagsRequest.json();
 				</a>
 			))}
 		</div>
-		<a href="/posts" class="seeMore primary">See more <Icon name="mingcute:arrow-right-fill" /></a>
+		<a href="/posts" class="seeMore">See more <Icon name="mingcute:arrow-right-fill" /></a>
 
 		<h3>Popular Tags</h3>
 		<div class="tagList">
 			{tags.map(tag => <Tag name={tag.name} postCount={tag.postCount} href={`/posts?tags=${tag.name}`} />)}
 		</div>
+		<a href="/tags" class="seeMore">See more <Icon name="mingcute:arrow-right-fill" /></a>
 	</Vertical>
 </Layout>
 
@@ -105,15 +106,20 @@ const tags = await tagsRequest.json();
 	:global(.dark) .tagList a { color: rgb(var(--text), 0.6); }
 
 	.seeMore {
-		color: white;
+		color: rgb(var(--text));
 		width: auto;
 		text-decoration: none;
 		padding: 10px 30px;
 		margin: 0 auto !important;
+		font-size: 1.1em;
 	}
 
 	.seeMore:hover {
-		color: white;
+		color: rgb(var(--text));
+	}
+	
+	.seeMore svg {
+		margin-bottom: -2.5px;
 	}
 
 	@media screen and (min-width: 601px) and (max-width: 1100px) {
