@@ -21,9 +21,7 @@ const isAuthor = session?.id == post.author
 
 <Layout title='Posts'>
 	<div class="postContainer">
-		<Post post={post}
-				style="cursor: pointer"
-				onclick={`document.location.href='/api/posts/${postID}/img'`} />
+		<Post post={post} />
 
 		<div class="tags">
 			<a class="primary light tag"><span style="opacity: 0.75">Poster:</span> {post.authorName}</a>
@@ -48,8 +46,7 @@ const isAuthor = session?.id == post.author
 
 	function setup() {
 		let btnEdit = document.getElementById('btnEditPost');
-		if(btnEdit)
-			btnEdit.addEventListener('click', () => navigate(`/posts/${btnEdit.dataset.postid}/edit`));
+		btnEdit?.addEventListener('click', () => navigate(`/posts/${btnEdit.dataset.postid}/edit`));
 	}
 
 	setup();
