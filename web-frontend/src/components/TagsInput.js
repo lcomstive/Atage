@@ -46,7 +46,7 @@ export class TagInput {
 			clearTimeout(this.debounceTimer);
 
 		this.debounceTimer = setTimeout(() => {
-			fetch(`/api/tags?search=${value}&sort=-postCount`)
+			fetch(`/api/tags?search=${value}&sort=-postCount&count=25`)
 				.then(response => response.json())
 				.then(tags => {
 					tags = tags.filter(x => !this.selectedTags.includes(x.name));
