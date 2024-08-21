@@ -6,7 +6,7 @@ const auth = require('../middleware/auth')
 const path = require('path')
 const fs = require('fs')
 const sharp = require('sharp')
-const { ThumbnailExtension, VideoExtensions } = require('../fileExtensions')
+const { ThumbnailExtension, VideoExtensions, translateSortQuery } = require('../utils')
 
 const ffmpeg = require('fluent-ffmpeg')
 ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path)
@@ -61,21 +61,6 @@ updateTagPostCount = async (tagID) =>
 		await tag.save()
 	else
 		await Tag.findByIdAndDelete(tagID)
-}
-
-translateSortQuery = (query) =>
-{
-	if(!query?.includes(':')) return query
-
-	let parts = query.split(':').map(x => x.toLowerCase().trim())
-
-	if(parts[0] == 'id')
-		parts[0] = '_id'
-
-	if(parts[1] == 'desc' || parts[1] == 'descending')
-		query = `-${parts[0]}`
-
-	return query
 }
 
 const fieldsDependencies =
@@ -340,11 +325,11 @@ router.get('/', async (req, res) =>
 		query.$and = [{ tags: { $all: tags } }]
 
 	// Sorting //
-	options.sort = translateSortQuery(req.query.sort?.toLowerCase() ?? 'id')
+	options.sort = translateSortQuery(req.query.sort ?? 'id')
 	
 	// Pagination //
 	options.limit = req.query.count ?? process.env.DEFAULT_API_POST_COUNT ?? 20
-	options.skip = req.query.page * options.limit
+	options.skip = (req.query.page ?? 0) * options.limit
 
 	// Get Posts //
 	let projection = getDesiredFields(req.query.fields?.split(','))

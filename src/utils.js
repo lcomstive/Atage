@@ -19,5 +19,22 @@ module.exports =
 		'.ogg',
 		'.mov',
 		'.mkv'
-	].join(', ')
+	].join(', '),
+
+	translateSortQuery: (query) =>
+	{
+		if(!query?.includes(':')) return query
+	
+		let parts = query.split(':').map(x => x.trim())
+	
+		if(parts[0] == 'id')
+			parts[0] = '_id'
+	
+		if(parts[1] == 'desc' || parts[1] == 'descending')
+			query = `-${parts[0]}`
+		else
+			query = parts[0]
+	
+		return query
+	}
 }
