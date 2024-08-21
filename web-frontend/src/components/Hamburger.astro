@@ -116,7 +116,7 @@ if(basePathname == '')
 	setup();
 	document.addEventListener('astro:after-swap', setup);
 	document.addEventListener('astro:before-preparation', () => {
-		if(document.body.clientWidth < 450) // Detect mobile
+		if(document.body.clientWidth < 650) // Detect mobile
 			setMenuState(false); // Close on page load
 	})
 	document.addEventListener('astro:page-load', () => menu.classList.remove('preventTransition'));
@@ -213,14 +213,6 @@ if(basePathname == '')
 		transform: rotate(180deg);
 	}
 
-	@media screen and (max-width: 450px) {
-		.hamburgerMenu .title .toggle {
-			margin: 0 -15px;
-			transform: rotate(90deg);
-		}
-		.hamburgerMenu.collapsed .title .toggle { transform: rotate(-90deg); }
-	}
-
 	/* Links */
 	.navlinks {
 		gap: 10px;
@@ -299,8 +291,8 @@ if(basePathname == '')
 		transition: width 0.15s ease-in-out;
 	}
 
-	/* Mobile */
-	@media screen and (max-width: 450px) {
+	/* Smaller screens */
+	@media screen and (max-width: 650px) {
 		.hamburgerMenu {
 			width: calc(100dvw - 40px) !important;
 			height: calc(100dvh - 40px);
@@ -310,6 +302,12 @@ if(basePathname == '')
 		}
 
 		.hamburgerMenu .title { padding-top: 0; }
+
+		.hamburgerMenu .title .toggle {
+			margin: 0 -15px;
+			transform: rotate(90deg);
+		}
+		.hamburgerMenu.collapsed .title .toggle { transform: rotate(-90deg); }
 
 		.themeColours { display: none !important; }
 
