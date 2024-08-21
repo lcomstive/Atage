@@ -9,7 +9,7 @@ const { name, postCount, ...attrs } = Astro.props;
 
 <a class="tag" {...attrs}>
 	{name}
-	{ postCount && <span class="postCount">({postCount})</span>}
+	{ postCount && <span class="postCount">{postCount}</span>}
 </a>
 
 <style is:global>
