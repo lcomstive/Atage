@@ -15,29 +15,39 @@ const router = express.Router()
 
 const PostMediaDirectory = path.join(__dirname, '../../user-content')
 
-addPostMeta = async (post, req) =>
+addPostMeta = async (post, req, desiredFields = null) =>
 {
 	// Deep copy of results so we don't modify original
 	post = JSON.parse(JSON.stringify(post))
 
-	let author = await User.findById(post.author)
-	post.authorName = author.username
-
-	post.tagData = []
-	for(let i = 0; i < post.tags.length; i++)
+	if(post.author && (desiredFields?.includes('authorname') ?? true))
 	{
-		let tag = await Tag.findById(post.tags[i])
-		if(tag)
-			post.tagData.push({
+		let author = await User.findById(post.author)
+		post.authorName = author?.username
+	}
+
+	if(post.tags?.length > 0 && (desiredFields?.includes('tagdata') ?? true))
+	{
+		post.tagData = []
+		for(let i = 0; i < post.tags.length; i++)
+			{
+				let tag = await Tag.findById(post.tags[i])
+				if(tag)
+					post.tagData.push({
 				name: tag.name,
 				postCount: tag.postCount
 			})
+		}
 	}
 
-	post.isAuthor = post.author == req.session?.userID
+	if(post.author && (desiredFields?.includes('isauthor') ?? true))
+		post.isAuthor = post.author == req.session?.userID
 
-	let ext = post.filepath.substring(post.filepath.lastIndexOf('.'))
-	post.isVideo = VideoExtensions.includes(ext)
+	if(post.filepath && (desiredFields?.includes('isvideo') ?? true))
+	{
+		let ext = post.filepath.substring(post.filepath.lastIndexOf('.'))
+		post.isVideo = VideoExtensions.includes(ext)
+	}
 
 	return post
 }
@@ -51,6 +61,30 @@ updateTagPostCount = async (tagID) =>
 		await tag.save()
 	else
 		await Tag.findByIdAndDelete(tagID)
+}
+
+const fieldsDependencies =
+[
+	{ field: 'authorname', dependsOn: 'author' },
+	{ field: 'tagdata', dependsOn: 'tags' },
+	{ field: 'isauthor', dependsOn: 'author' },
+	{ field: 'isvideo', dependsOn: 'filepath' }
+]
+getDesiredFields = (fields) =>
+{
+	fields = fields?.filter(x => x && x != '')
+					.map(x => x.toLowerCase().trim())
+	if(!fields || fields?.length == 0) return null
+	
+	let checkingFields = JSON.parse(JSON.stringify(fields)) // Copy object
+	for(let i = 0; i < checkingFields?.length; i++)
+	{
+		let dependency = fieldsDependencies.find(x => x.field == checkingFields[i])
+		if(dependency)
+			fields.push(dependency.dependsOn)
+	}
+
+	return fields
 }
 
 // Create post
@@ -284,22 +318,27 @@ router.get('/', async (req, res) =>
 		{ public: true },
 		{ author: req.session?.userID }
 	]}
+	let options = {}
 
 	if(tags.length > 0)
 		query.$and = [{ tags: { $all: tags } }]
 
+	// Sorting //
+	let sortQuery = req.query.sort?.toLowerCase() ?? 'date:desc'
+
+	if(sortQuery.startsWith('date:'))
+		options.sort = sortQuery
+	
 	// Pagination //
-	const pageCount = req.query.count ?? process.env.DEFAULT_API_POST_COUNT ?? 50
-	const pageIndex = req.query.page ?? 0
-	const pagination = {
-		limit: pageCount,
-		skip: pageIndex * pageCount
-	}
-		
+	options.limit = req.query.count ?? process.env.DEFAULT_API_POST_COUNT ?? 20
+	options.skip = req.query.page * options.limit
+
 	// Get Posts //
-	let posts = await Post.find(query, null, pagination);
+	let projection = getDesiredFields(req.query.fields?.split(','))
+	let posts = await Post.find(query, projection, options)
+							
 	for(let i = 0; i < posts.length; i++)
-		posts[i] = await addPostMeta(posts[i], req)
+		posts[i] = await addPostMeta(posts[i], req, projection)
 
 	return res.json(posts)
 })

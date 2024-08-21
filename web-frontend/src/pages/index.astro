@@ -5,7 +5,7 @@ import { APIAddress } from '../scripts/API';
 import Vertical from '../components/Vertical.astro';
 import Post from '../components/Post.astro';
 
-const postsRequest = await fetch(`${APIAddress}/posts?count=4`, { headers: { 'Accept': 'application/json' } });
+const postsRequest = await fetch(`${APIAddress}/posts?count=4&sort=date:asc`, { headers: { 'Accept': 'application/json' } });
 const posts = await postsRequest.json();
 ---
 
@@ -69,27 +69,19 @@ const posts = await postsRequest.json();
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
-		padding-bottom: 20px;
-		justify-content: space-evenly;
+		justify-content: center;
+	}
+
+	.recentPosts a {
+		width: 300px;
+		height: 300px;
 	}
 
 	.recentPosts .post {
+		width: 100%;
+		height: 100%;
 		position: relative;
-		height: 300px;
-		flex-grow: 1;
 		transition: opacity 0.1s ease-in-out;
-	}
-	
-	.recentPosts img {
-		cursor: pointer;
-		min-width: 100%;
-		max-height: 100%;
-		object-fit: cover;
-		vertical-align: bottom;
-		border-radius: var(--rounding);
-		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
-
-		transition: opacity 0.2s ease-in-out;
 	}
 
 	.seeMore {
