@@ -9,10 +9,13 @@ import Post from '../../components/Post.astro';
 
 let apiURL = '/posts';
 let apiParams = new URLSearchParams()
+apiParams.set('fields', 'id,isVideo');
+apiParams.set('count', 15);
+
 if(Astro.url.searchParams.has('tags'))
 	apiParams.set('tags', Astro.url.searchParams.get('tags'));
 
-const sorting = Astro.url.searchParams.get('sort') ?? 'asc';
+const sorting = Astro.url.searchParams.get('sort') ?? 'desc';
 apiParams.set('sort', `date:${sorting}`);
 
 const response = await fetchAuth(`${apiURL}?${apiParams.toString()}`, Astro.request);
@@ -37,8 +40,8 @@ const session = await getSession();
 		<Horizontal>
 			<TagsInput style="flex-grow: 1" transition:persist />
 			<button id="btnSort">
-				<Icon name="mingcute:sort-descending-line" class={sorting != 'desc' ? 'hidden' : ''} />
-				<Icon name="mingcute:sort-ascending-line" class={sorting == 'desc' ? 'hidden' : ''} />
+				<Icon name="mingcute:sort-descending-line" class={sorting != 'desc' ? 'hidden' : ''} title="Sort posts descending" />
+				<Icon name="mingcute:sort-ascending-line"  class={sorting == 'desc' ? 'hidden' : ''} title="Sort posts ascending" />
 			</button>
 		</Horizontal>
 
@@ -67,7 +70,7 @@ const session = await getSession();
 
 	function swapSortOrder() {
 		const url = new URL(window.location.href);
-		let currentSort = url.searchParams.get('sort') ?? 'asc';
+		let currentSort = url.searchParams.get('sort') ?? 'desc';
 		url.searchParams.set('sort', currentSort == 'asc' ? 'desc' : 'asc');
 		navigate(url.toString());
 	}
@@ -109,13 +112,12 @@ const session = await getSession();
 		flex-wrap: wrap;
 		gap: 10px;
 		padding-bottom: 20px;
-		justify-content: center;
 	}
 
 	.allPostsContainer .post {
 		position: relative;
-		height: 350px;
-		width: 350px;
+		width: calc((100dvw - 145px) / 6);
+		height: calc((100dvw - 145px) / 6);
 		transition: opacity 0.1s ease-in-out;
 	}
 
@@ -155,24 +157,18 @@ const session = await getSession();
 		border: none;
 	}
 
-	@media screen and (max-aspect-ratio: 1/1) {
-		.allPostsContainer > .post {
-			height: 200px;
-		}
-	}
-
 	/* Mobile */
-	@media screen and (max-width: 450px) {
+	@media screen and (max-width: 650px) {
 		.allPostsContainer .post {
-			width: 150px;
-			height: 150px;
+			width:  calc((100dvw - 40px) / 3);
+			height: calc((100dvw - 40px) / 3);
 		}
 	}
 
-	@media screen and (min-width: 451px) and (max-width: 1200px) {
+	@media screen and (min-width: 651px) and (max-width: 1200px) {
 		.allPostsContainer .post {
-			height: 200px !important;
-			width: 200px !important;
+			width:  calc((100dvw - 120px) / 4);
+			height: calc((100dvw - 120px) / 4);
 		}
 	}
 

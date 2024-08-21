@@ -38,21 +38,15 @@ const { post, useThumbnail = false, ...attrs } = Astro.props;
 	.videoIcon {
 		position: absolute;
 		top: 5px; left: 5px;
-		width: 35px;
-		height: 35px;
+		width: 30px;
+		height: 30px;
 
 		padding: 5px;
 		opacity: 0.6;
 		border-radius: var(--rounding);
 		
-		color: rgba(var(--accent));
-		background: rgba(var(--secondary));
-		border: 1.5px solid rgba(var(--accent));
-	}
-
-	:global(.dark) .videoIcon {
 		color: white;
-		border-color: rgba(var(--secondary));
-		background: rgba(var(--secondary), 0.5);
+		background: #000000cd;
+		border: 1.5px solid #ffffff67;
 	}
 </style>
