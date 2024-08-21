@@ -29,7 +29,7 @@ export class TagInput {
 		this.fields.input.addEventListener('keydown', ev => this.#checkSpecialKeys(ev));
 		this.fields.input.addEventListener('click', () => this.search());
 
-		this.container.parentElement.addEventListener('click', ev => this.#documentClicked(ev));
+		document.addEventListener('click', ev => this.#documentClicked(ev));
 
 		if(this.fields.add || allowNewTags)
 			this.fields.add.addEventListener('click', () => this.#addButtonClicked());
