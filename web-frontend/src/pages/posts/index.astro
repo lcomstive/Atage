@@ -7,11 +7,15 @@ import TagsInput from '../../components/TagsInput.astro';
 import Horizontal from '../../components/Horizontal.astro';
 import Post from '../../components/Post.astro';
 
-let apiURL = '/posts'
+let apiURL = '/posts';
+let apiParams = new URLSearchParams()
 if(Astro.url.searchParams.has('tags'))
-	apiURL += `?tags=${Astro.url.searchParams.get('tags')}`
+	apiParams.set('tags', Astro.url.searchParams.get('tags'));
 
-const response = await fetchAuth(apiURL, Astro.request);
+const sorting = Astro.url.searchParams.get('sort') ?? 'asc';
+apiParams.set('sort', `date:${sorting}`);
+
+const response = await fetchAuth(`${apiURL}?${apiParams.toString()}`, Astro.request);
 const posts = await response.json();
 const title = 'Posts';
 
@@ -30,7 +34,13 @@ const session = await getSession();
 				</a>
 			}
 		</Horizontal>
-		<TagsInput transition:persist />
+		<Horizontal>
+			<TagsInput style="flex-grow: 1" transition:persist />
+			<button id="btnSort">
+				<Icon name="mingcute:sort-descending-line" class={sorting != 'desc' ? 'hidden' : ''} />
+				<Icon name="mingcute:sort-ascending-line" class={sorting == 'desc' ? 'hidden' : ''} />
+			</button>
+		</Horizontal>
 
 		<div class="allPostsContainer">
 			{posts.map(post => <a href={`/posts/${post._id}`}><Post post={post} useThumbnail={true} data-postid={post._id} /></a> )}
@@ -55,6 +65,13 @@ const session = await getSession();
 		navigate(url.toString());
 	}
 
+	function swapSortOrder() {
+		const url = new URL(window.location.href);
+		let currentSort = url.searchParams.get('sort') ?? 'asc';
+		url.searchParams.set('sort', currentSort == 'asc' ? 'desc' : 'asc');
+		navigate(url.toString());
+	}
+
 	function setup() {
 		let allPostsContainer = document.getElementsByClassName('allPostsContainer')[0];
 		if(!allPostsContainer)
@@ -63,6 +80,8 @@ const session = await getSession();
 		let tagInputEl = document.getElementsByClassName('tagsInput')[0]
 		if(!tagInputEl)
 			return;
+
+		document.getElementById('btnSort')?.addEventListener('click', swapSortOrder);
 
 		// Get search tags from URL
 		let tags = new URLSearchParams(window.location.search).get('tags')?.split(',') ?? [];
@@ -73,8 +92,14 @@ const session = await getSession();
 		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
 	}
 
+	function removeListeners() {
+		document.getElementById('btnSort')?.removeEventListener('click', swapSortOrder);
+		document.getElementsByClassName('tagsInput')[0]?.removeEventListener('tagsChanged', onTagsChanged);
+	}
+
 	setup();
 	document.addEventListener('astro:after-swap', setup);
+	document.addEventListener('astro:before-swap', removeListeners)
 </script>
 
 <style is:inline>
@@ -119,6 +144,15 @@ const session = await getSession();
 		position: absolute;
 		right: 10px;
 		top: 25px;
+	}
+
+	#btnSort {
+		width: 35px;
+		height: 35px;
+		padding: 0;
+		padding-top: 5px;
+		font-size: 1.2em;
+		border: none;
 	}
 
 	@media screen and (max-aspect-ratio: 1/1) {

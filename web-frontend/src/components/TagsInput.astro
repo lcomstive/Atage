@@ -4,14 +4,13 @@ import { Icon } from 'astro-icon/components';
 import Horizontal from './Horizontal.astro';
 
 interface Props {
-	addButton?: Boolean,
-	tags?: []
+	addButton?: Boolean
 }
 
-const { addButton, tags } = Astro.props;
+const { addButton, ...attrs } = Astro.props;
 ---
 
-<div class="tagsInput">
+<div class="tagsInput" {...attrs}>
 	<Horizontal>
 		<input placeholder="Tags" />
 
