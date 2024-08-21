@@ -30,13 +30,13 @@ addPostMeta = async (post, req, desiredFields = null) =>
 	{
 		post.tagData = []
 		for(let i = 0; i < post.tags.length; i++)
-			{
-				let tag = await Tag.findById(post.tags[i])
-				if(tag)
-					post.tagData.push({
-				name: tag.name,
-				postCount: tag.postCount
-			})
+		{
+			let tag = await Tag.findById(post.tags[i])
+			if(tag)
+				post.tagData.push({
+					name: tag.name,
+					postCount: tag.postCount
+				})
 		}
 	}
 
@@ -193,15 +193,14 @@ const updatePost = async (id, data) =>
 	post.description = data.description ?? ''
 
 	let allTags = post.tags
-
-	post.tags = []
 	for(let i = 0; i < data.tags?.length; i++)
 	{
 		let tag = await Tag.findOne({ name: data.tags[i].toLowerCase() })
 		if(!tag)
 			tag = await Tag.create({ name: data.tags[i].toLowerCase() })
 
-		post.tags.push(tag._id)
+		if(!post.tags.includes(tag._id))
+			post.tags.push(tag._id)
 
 		if(!allTags.includes(tag._id))
 			allTags.push(tag._id)

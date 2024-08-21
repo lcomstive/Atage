@@ -65,7 +65,7 @@ if(session == null)
 
 <script>
 	import { navigate } from "astro:transitions/client";
-import { TagInput } from "../../components/TagsInput";
+	import { TagInput } from "../../components/TagsInput";
 
 	const VideoExtensions = [
 		'mp4',
@@ -167,7 +167,7 @@ import { TagInput } from "../../components/TagsInput";
 			post.id = post.upload.response.postIDs[0];
 			post.preview.style.opacity = 1;
 			post.upload = null;
-			console.log(`Post ID: ${post.id}`);
+			// console.log(`Post ID: ${post.id}`);
 
 			post.tagInput.generateSuggestedTags(post.id);
 		};
@@ -183,9 +183,8 @@ import { TagInput } from "../../components/TagsInput";
 				public: posts[i].container.getElementsByClassName('postPublic')[0].checked,
 				description: posts[i].container.getElementsByTagName('textarea')[0].value,
 				tags: posts[i].tagInput.selectedTags
-			});
+			})
 		}
-		console.log(JSON.stringify({ posts: body }))
 		fetch('/api/posts/updateMany', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -201,11 +200,6 @@ import { TagInput } from "../../components/TagsInput";
 
 	function deletePost(postID) {
 		fetch(`/api/posts/${postID}`, { method: 'DELETE' })
-			.then(response => response.json())
-			.then(data => {
-				if(!data.success)
-					console.log(data);
-			})
 			.catch(err => console.error(err))
 	}
 
