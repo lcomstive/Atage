@@ -1,22 +1,33 @@
 const express = require('express')
 const Tag = require('../models/tag.js')
+const { translateSortQuery } = require('../utils')
 
 const router = express.Router()
 
+// Get tags
 router.get('/', async (req, res) =>
 {
 	let search = (req.query.search ?? '')
 					.replaceAll('(', '\\(')
 					.replaceAll(')', '\\)')
 
+	let options = {}
+	if(req.query.count)
+	{
+		options.limit = req.query.count
+		options.skip = (req.query.page ?? 0) * options.limit
+	}
+
+	options.sort = translateSortQuery(req.query.sort ?? 'id')
+
 	let tags = []
 	if(search != '')
 		tags = await Tag.find({ $or: [
 			{ name: { $regex: search, $options: 'i' } },
 			{ aliases: { $regex: search } }
-		]})
+		]}, null, options)
 	else
-		tags = await Tag.find({})
+		tags = await Tag.find({}, null, options)
 	return res.json(tags)
 })
 

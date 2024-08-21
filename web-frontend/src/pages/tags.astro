@@ -1,0 +1,36 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { APIAddress } from '../scripts/API';
+import Tag from '../components/Tag.astro';
+
+let apiURL = `${APIAddress}/tags`;
+let apiParams = new URLSearchParams()
+apiParams.set('count', 100);
+
+const sorting = Astro.url.searchParams.get('sort') ?? 'desc';
+apiParams.set('sort', `postCount:${sorting}`);
+
+const response = await fetch(`${apiURL}?${apiParams.toString()}`, Astro.request);
+const tags = await response.json();
+const title = 'Tags';
+
+---
+
+<Layout title={title}>
+	<h1>{title}</h1>
+	
+	<div class="tagList">
+		{tags.map(tag => <Tag name={tag.name} postCount={tag.postCount} href={`/posts?tags=${tag.name}`} /> )}
+	</div>
+</Layout>
+
+<style>
+	.tagList {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		padding: 20px;
+		gap: 10px;
+		justify-content: center;
+	}
+</style>

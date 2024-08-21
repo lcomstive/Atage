@@ -21,18 +21,28 @@ const isAuthor = session?.id == post.author
 
 <Layout title='Posts'>
 	<div class="postContainer">
-		<Post post={post}
-				style="cursor: pointer"
-				onclick={`document.location.href='/api/posts/${postID}/img'`} />
+		<div class="mainContent secondary lightest">
+			<div class="postInfo">
+				<div>
+					<h3 style="margin-top: 0">Tags</h3>
+					{post.tagData && post.tagData.map(tag => (
+						<Tag name={tag.name} postCount={tag.postCount} href={`/posts?tags=${tag.name}`} />
+					))}
+				</div>
 
-		<div class="tags">
-			<a class="primary light tag"><span style="opacity: 0.75">Poster:</span> {post.authorName}</a>
-			{post.tagData && post.tagData.map(tag => (
-				<Tag name={tag.name} postCount={tag.postCount} href={`/posts?tags=${tag.name}`} />
-			))}
+				<div>
+					<h3>Info</h3>
+
+					<Horizontal><span>Poster:</span><a>{post.authorName}</a></Horizontal>
+					<span>{new Date(post.date).toDateString()}</span>
+				</div>
+			</div>
+	
+			<Post post={post}/>
 		</div>
 
-		<p>{ post.description }</p>
+		<h3>Description</h3>
+		<p style="margin-top: 5px">{ post.description }</p>
 
 		<br>
 
@@ -48,8 +58,7 @@ const isAuthor = session?.id == post.author
 
 	function setup() {
 		let btnEdit = document.getElementById('btnEditPost');
-		if(btnEdit)
-			btnEdit.addEventListener('click', () => navigate(`/posts/${btnEdit.dataset.postid}/edit`));
+		btnEdit?.addEventListener('click', () => navigate(`/posts/${btnEdit.dataset.postid}/edit`));
 	}
 
 	setup();
@@ -58,25 +67,74 @@ const isAuthor = session?.id == post.author
 
 <style>
 	.postContainer {
-		max-width: 800px;
+		max-width: 1000px;
 		margin: 0 auto;
 	}
 
-	.tags {
+	.mainContent {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 5px;
+		flex-direction: row;
+		max-width: 95dvw;
+		justify-content: space-between;
 	}
 
-	:global(img), :global(video) {
-		border-radius: var(--rounding);
+	h3 { margin-bottom: 0; }
+
+	.postInfo {
+		width: 300px;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		margin-right: 50px;
+		padding-top: 10px;
+		padding-left: 20px;
+		padding-bottom: 10px;
+	}
+
+	.postInfo a {
+		color: rgb(var(--accent), 0.8);
+	}
+
+	:global(.dark) .postInfo a { color: rgb(var(--text), 0.65); }
+
+	.postInfo :global(.tag) {
+		height: 25px;
+		padding: 0;
+		border: none;
+		background: none;
 		width: 100%;
-		height: auto;
-		max-width: 800px;
-		box-shadow: 0 2px 5px rgba(var(--text), 0.1);
 	}
 
-	button svg {
-		margin-bottom: -2px;
+	.postInfo :global(.tag) {
+		justify-content: space-between;
+	}
+
+	:global(.post) {
+		height: 100%;
+		margin-bottom: -7px;
+	}
+	
+	:global(.post img, .post video) {
+		object-fit: contain !important;
+		max-height: 90dvh !important;
+
+		min-width: unset !important;
+	}
+
+	button svg { margin-bottom: -2px; }
+
+	@media screen and (max-width: 800px) {
+		.mainContent { flex-direction: column-reverse; }
+		
+		.postInfo {
+			width: calc(100% - 30px);
+			padding: 15px;
+		}
+
+		:global(.post img, .post video) {
+			width: 100%;
+			height: auto;
+			max-height: unset !important;
+		}
 	}
 </style>

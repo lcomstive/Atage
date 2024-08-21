@@ -4,6 +4,7 @@ import Layout from '../../../layouts/Layout.astro';
 import TagsInput from '../../../components/TagsInput.astro';
 import { fetchAuth, getSession } from '../../../scripts/Authenticate';
 import Horizontal from '../../../components/Horizontal.astro';
+import Post from '../../../components/Post.astro';
 
 const postID = Astro.params.id;
 const response = await fetchAuth(`/posts/${postID}`, Astro.request);
@@ -21,7 +22,7 @@ if(session?.id != post.author)
 
 <Layout title='Post'>
 	<div class="editPostContainer" data-post={JSON.stringify(post)}>
-		<img src={`/api/posts/${postID}/img`} alt='Post media' />
+		<Post post={post} />
 
 		<TagsInput addButton={true} tags={post.tagData} />
 
@@ -118,7 +119,7 @@ if(session?.id != post.author)
 		margin: 0 auto;
 	}
 
-	img {
+	:global(.post > *) {
 		border-radius: var(--rounding);
 		width: 100%;
 		height: auto;
@@ -137,7 +138,7 @@ if(session?.id != post.author)
 
 	:global(.horizontal):has(#btnUpdate) { flex-wrap: wrap; }
 
-	@media screen and (max-width: 450px) {
+	@media screen and (max-width: 650px) {
 		#btnUpdate { margin: 0; }
 		
 		#btnDelete {

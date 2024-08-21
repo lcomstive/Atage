@@ -6,7 +6,7 @@ const auth = require('../middleware/auth')
 const path = require('path')
 const fs = require('fs')
 const sharp = require('sharp')
-const { ThumbnailExtension, VideoExtensions } = require('../fileExtensions')
+const { ThumbnailExtension, VideoExtensions, translateSortQuery } = require('../utils')
 
 const ffmpeg = require('fluent-ffmpeg')
 ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path)
@@ -143,7 +143,8 @@ router.post('/new', auth, async (req, res) =>
 		let post = await Post.create({
 			author: req.session.userID,
 			public: posts[i].public ?? true,
-			description: posts[i].description ?? ''
+			description: posts[i].description ?? '',
+			date: new Date().toISOString()
 		})
 		postIDs.push(post._id)
 
@@ -324,14 +325,11 @@ router.get('/', async (req, res) =>
 		query.$and = [{ tags: { $all: tags } }]
 
 	// Sorting //
-	let sortQuery = req.query.sort?.toLowerCase() ?? 'date:desc'
-
-	if(sortQuery.startsWith('date:'))
-		options.sort = sortQuery
+	options.sort = translateSortQuery(req.query.sort ?? 'id')
 	
 	// Pagination //
 	options.limit = req.query.count ?? process.env.DEFAULT_API_POST_COUNT ?? 20
-	options.skip = req.query.page * options.limit
+	options.skip = (req.query.page ?? 0) * options.limit
 
 	// Get Posts //
 	let projection = getDesiredFields(req.query.fields?.split(','))

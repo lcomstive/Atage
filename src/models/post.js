@@ -6,10 +6,11 @@ const PostSchema = new mongoose.Schema({
 		type: ObjectId,
 		required: true
 	},
-	public: { type: Boolean },
-	filepath: { type: String },
-	description: { type: String },
-	tags: { type: [ObjectId], default: [] }
+	public: Boolean,
+	filepath: String,
+	description: String,
+	tags: { type: [ObjectId], default: [] },
+	date: Date
 })
 
 module.exports = mongoose.model('Post', PostSchema)

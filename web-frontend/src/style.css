@@ -101,6 +101,8 @@ body {
 
 a, a:visited { color: rgb(var(--accent)); }
 
+a:hover { cursor: pointer; }
+
 a:hover, a:focus { opacity: 0.8; }
 
 .dark a:hover { color: rgb(var(--primary), 0.8); }
