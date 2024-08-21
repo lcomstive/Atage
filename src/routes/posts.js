@@ -63,6 +63,21 @@ updateTagPostCount = async (tagID) =>
 		await Tag.findByIdAndDelete(tagID)
 }
 
+translateSortQuery = (query) =>
+{
+	if(!query?.includes(':')) return query
+
+	let parts = query.split(':').map(x => x.toLowerCase().trim())
+
+	if(parts[0] == 'id')
+		parts[0] = '_id'
+
+	if(parts[1] == 'desc' || parts[1] == 'descending')
+		query = `-${parts[0]}`
+
+	return query
+}
+
 const fieldsDependencies =
 [
 	{ field: 'authorname', dependsOn: 'author' },
@@ -143,7 +158,8 @@ router.post('/new', auth, async (req, res) =>
 		let post = await Post.create({
 			author: req.session.userID,
 			public: posts[i].public ?? true,
-			description: posts[i].description ?? ''
+			description: posts[i].description ?? '',
+			date: new Date().toISOString()
 		})
 		postIDs.push(post._id)
 
@@ -324,10 +340,7 @@ router.get('/', async (req, res) =>
 		query.$and = [{ tags: { $all: tags } }]
 
 	// Sorting //
-	let sortQuery = req.query.sort?.toLowerCase() ?? 'date:desc'
-
-	if(sortQuery.startsWith('date:'))
-		options.sort = sortQuery
+	options.sort = translateSortQuery(req.query.sort?.toLowerCase() ?? 'id')
 	
 	// Pagination //
 	options.limit = req.query.count ?? process.env.DEFAULT_API_POST_COUNT ?? 20
