@@ -1,8 +1,55 @@
 import { Router } from 'express'
 import Tag from '../models/tag.js'
+import Post from '../models/post.js'
 import { translateSortQuery } from '../utils.mjs'
 
 export const router = Router()
+
+const NSFWTagName = 'explicit'
+let NSFWTagID = null
+export const getNSFWTagID = async () =>
+{
+	if(NSFWTagID != null)
+		return NSFWTagID
+
+	let tag = await Tag.findOne({ name: NSFWTagName })
+						.catch(err => console.error(err))
+	if(!tag)
+	{
+		tag = await Tag.create({ name: NSFWTagName, postCount: 0 })
+		await tag.save()
+		NSFWTagID = tag._id
+	}
+
+	NSFWTagID = tag._id
+	return NSFWTagID
+}
+
+export const updateTagPostCount = async (tagID) =>
+{
+	let tag = await Tag.findById(tagID)
+	if(!tag)
+	{
+		console.error(`Failed to find tag by ID ${tagID}`)
+		return
+	}
+	tag.postCount = await Post.countDocuments({ tags: tagID })
+
+	if(tag.postCount > 0 || tag._id.equals(NSFWTagID))
+		await tag.save()
+	else
+		await Tag.findByIdAndDelete(tagID)
+}
+
+export const updateAllTagPostCounts = async () =>
+{
+	await getNSFWTagID() // Put NSFW tag ID into cache
+
+	let tags = await Tag.find({})
+	for(let i = 0; i < tags.length; i++)
+		updateTagPostCount(tags[i])
+}
+setTimeout(async () => await updateAllTagPostCounts(), 100) // Run on startup
 
 // Get tags
 router.get('/', async (req, res) =>

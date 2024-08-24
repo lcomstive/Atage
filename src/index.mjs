@@ -60,21 +60,7 @@ let port = process.env.PORT || 3000
 let sslKey = process.env.SSL_KEY
 let sslCert = process.env.SSL_CERT
 
-const onServerStart = async () => {
-	console.log(`Server started on port ${port}`)
-
-	// Update tag post counts
-	let tags = await Tag.find({})
-	for(let i = 0; i < tags.length; i++)
-	{
-		tags[i].postCount = await Post.countDocuments({ tags: tags[i]._id })
-
-		if(tags[i].postCount > 0)
-			await tags[i].save()
-		else
-			await Tag.findByIdAndDelete(tags[i]._id)
-	}
-}
+const onServerStart = async () => console.log(`Server started on port ${port}`)
 
 if(sslKey && sslCert)
 {

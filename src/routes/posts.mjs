@@ -11,28 +11,12 @@ import User from '../models/user.js'
 import auth from '../middleware/auth.js'
 
 import { checkNSFW } from './generation.mjs'
+import { updateTagPostCount } from './tags.mjs'
 import { ThumbnailExtension, VideoExtensions, translateSortQuery, PostMediaDirectory } from '../utils.mjs'
 
 ffmpeg.setFfmpegPath(FFMPEGPath)
 
 export const router = Router()
-
-const nsfwTagName = 'explicit'
-let nsfwTagID = null
-const getNSFWTag = async () =>
-{
-	if(nsfwTagID)
-		return nsfwTagID
-
-	nsfwTagID = await Tag.findOne({ name: nsfwTagName })
-	if(!nsfwTagID)
-	{
-		let nsfwTag = await Tag.create({ name: nsfwTagName, postCount: 0 })
-		nsfwTag.save()
-		nsfwTagID = nsfwTag._id
-	}
-	return nsfwTagID	
-}
 
 const addPostMeta = async (post, req, desiredFields = null) =>
 {
@@ -69,17 +53,6 @@ const addPostMeta = async (post, req, desiredFields = null) =>
 	}
 
 	return post
-}
-
-const updateTagPostCount = async (tagID) =>
-{
-	let tag = await Tag.findById(tagID)
-	tag.postCount = await Post.countDocuments({ tags: tagID })
-
-	if(tag.postCount > 0)
-		await tag.save()
-	else
-		await Tag.findByIdAndDelete(tagID)
 }
 
 const fieldsDependencies =

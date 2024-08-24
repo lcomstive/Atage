@@ -92,7 +92,7 @@ const generateTags = (imageBase64) => new Promise(async (resolve, reject) => {
 */
 router.get('/tags/:id', auth, async (req, res) => {
 	if(!LLM.enabled)
-		return res.json({ tags, warning: 'Image recognition is not enabled on this instance' })
+		return res.json({ tags: [], warning: 'Image recognition is not enabled on this instance' })
 
 	let post = await Post.findById(req.params.id)
 	if(!post)
