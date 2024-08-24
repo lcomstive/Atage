@@ -179,8 +179,6 @@ if(session == null)
 			// console.log(`Post ID: ${post.id}`);
 
 			post.tagInput.generateSuggestedTags(post.id);
-
-			post.tagInput.addTag('explicit')
 		};
 		post.upload.send(body);
 	}
