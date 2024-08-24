@@ -93,7 +93,7 @@ if(session == null)
 			return;
 		}
 
-		fetch('/api/user/updateUsername', {
+		fetch('/api/users/updateUsername', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ username })
@@ -126,7 +126,7 @@ if(session == null)
 			return;
 		}
 
-		fetch('/api/user/updatePassword', {
+		fetch('/api/users/updatePassword', {
 			method: 'POST',
 			credentials: 'include',
 			headers: { 'Content-Type': 'application/json' },

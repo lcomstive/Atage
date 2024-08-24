@@ -93,7 +93,7 @@ if(session?.id != post.author)
 		elements.public.checked = post.public;
 
 		// Tags Input //	
-		tagsInput = new TagInput(elements.tags);
+		tagsInput = new TagInput(elements.tags, /* Allow add new tags */ true, /* allowNegativeTags */ false);
 		if(post.tagData?.length > 0)
 			tagsInput.addTags(post.tagData?.map(x => x.name));
 		tagsInput.generateSuggestedTags(post._id);

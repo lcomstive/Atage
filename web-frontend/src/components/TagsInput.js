@@ -1,14 +1,22 @@
 const MinTagLength = 0 // Minimum characters to begin searching tags
 const TagInputRegex = new RegExp('^[0-9a-zA-Z\-\_\(\)\:]*$');
-const TagTemplate = `<a class="tag" data-tagname="{name}" data-action="remove">{name}</a>`;
-const SuggestedTagTemplate =   `<a class="tag suggested" data-action="suggested" data-tagname="{name}">
+const TagTemplate = `<a class="tag {class}" data-tagname="{name}" data-action="{action}" data-flow="bottom" data-tooltip="{tooltip}" style="{style}">{name} {additionalText}</a>`;
+const TagsEventName = 'tagsChanged';
+
+const SuggestedTagTemplate = `<a class="tag suggested" data-action="suggested" data-tagname="{name}">
 									{name}
 									<span data-tooltip="This tag was suggested. Click to add!" data-flow="bottom">✨</span>
 								</a>`;
-const TagsEventName = 'tagsChanged';
+const NegativeTagTemplate = `<a class="tag negative" data-action="remove-negative" data-tagname="{name}">{name}</a>`
+
+const TagHandlers = new Map([
+	[ 'default', { action: 'remove' }],
+	[ 'explicit', { tooltip: 'This image is suspected to be NSFW', style: 'background: rgba(var(--error), 0.1); color: rgb(var(--error), 0.8)' }],
+	[ 'anime', { action: 'remove', tooltip: 'UwU' }]
+])
 
 export class TagInput {
-	constructor(container, allowNewTags) {
+	constructor(container, allowNewTags, allowNegativeTags = true) {
 		this.container = container;
 		this.fields = {
 			input: container.getElementsByTagName('input')[0],
@@ -18,10 +26,12 @@ export class TagInput {
 		};
 
 		this.selectedTags = [];
+		this.negativeTags = [];
 		this.suggestedTags = [];
 		this.highlightedTag = null;
 		this.showingAutocomplete = false;
 		this.allowNewTags = allowNewTags || this.fields.add;
+		this.allowNegativeTags = allowNegativeTags;
 
 		this.container.addEventListener('click', ev => this.#onTagClicked(ev));
 		this.fields.input.addEventListener('beforeinput', this.#checkInput);
@@ -45,11 +55,16 @@ export class TagInput {
 		if(this.debounceTimer != null)
 			clearTimeout(this.debounceTimer);
 
+		let negative = value.startsWith('-')
+		if(negative)
+			value = value.substring(1) // Exclude negative operator from tag search
+		negative = negative && this.allowNegativeTags
+
 		this.debounceTimer = setTimeout(() => {
 			fetch(`/api/tags?search=${value}&sort=-postCount&count=25`)
 				.then(response => response.json())
 				.then(tags => {
-					tags = tags.filter(x => !this.selectedTags.includes(x.name));
+					tags = tags.filter(x => !this.selectedTags.includes(x.name) && !this.negativeTags.includes(x.name));
 					this.highlightedTag = -1;
 					if(tags.length == 0)
 					{
@@ -62,7 +77,7 @@ export class TagInput {
 					
 					let html = '';
 					tags.forEach(tag => html +=
-					`<li data-tagname="${tag.name}" data-action="add">
+					`<li data-tagname="${tag.name}" data-action="${!negative ? 'add' : 'add-negative'}">
 						<p>${tag.name}</p>
 						<span class="postCount">${tag.postCount}</span>
 					</li>`);
@@ -83,7 +98,15 @@ export class TagInput {
 	addTags(names) {
 		this.selectedTags.push(...names);
 		this.#refreshSelectedList();
-		this.container.dispatchEvent(new CustomEvent(TagsEventName, { detail: this.selectedTags }));
+		this.#dispatchTagChangeEvent();
+	}
+
+	addNegativeTag(name) { this.addNegativeTags([ name.toLowerCase() ]) }
+
+	addNegativeTags(names) {
+		this.negativeTags.push(...names);
+		this.#refreshSelectedList();
+		this.#dispatchTagChangeEvent();
 	}
 
 	addNewTag(name) {
@@ -91,7 +114,11 @@ export class TagInput {
 		this.closeAutocomplete();
 
 		name = name.toLowerCase();
-		if(!name || name == '' || this.selectedTags.includes(name))
+		
+		if(name.startsWith('-')) // Remove negation modifier
+			name = name.substring(1);
+
+		if(!name || name == '' || this.selectedTags.includes(name) || this.negativeTags.includes(name))
 			return;
 
 		this.addTag(name);
@@ -104,13 +131,25 @@ export class TagInput {
 
 		this.selectedTags.splice(index, 1);
 		this.#refreshSelectedList();
-		this.container.dispatchEvent(new CustomEvent(TagsEventName, { detail: this.selectedTags }));
+		this.#dispatchTagChangeEvent();
+	}
+
+	removeNegativeTag(name) {
+		let index = this.negativeTags.indexOf(name.toLowerCase());
+		if(index < 0)
+			return; // Not found
+
+		this.negativeTags.splice(index, 1);
+		this.#refreshSelectedList();
+		this.#dispatchTagChangeEvent();
 	}
 
 	generateSuggestedTags(postID) {
 		fetch(`/api/generate/tags/${postID}`)
 			.then(response => response.json())
 			.then(data => {
+				console.log(data)
+				
 				if(data.error)
 					return console.error(`Failed to generate suggested tags - ${data.error}`);
 				else if(data.warning)
@@ -118,16 +157,23 @@ export class TagInput {
 				else if(!data.success)
 					return console.error(`Failed to generate suggest tags - unknown error`);
 
-				this.suggestedTags = data.tags.filter(x => !this.selectedTags.includes(x));
+				this.suggestedTags = data.tags.filter(x => !this.selectedTags.includes(x) && !this.negativeTags.includes(x));
 				this.#refreshSelectedList();
 			})
 			.catch(err => console.error(err));
 	}
 
+	#dispatchTagChangeEvent() {
+		this.container.dispatchEvent(new CustomEvent(TagsEventName, { detail: { selected: this.selectedTags, negated: this.negativeTags } }))
+	}
+
 	#refreshSelectedList() {
 		this.fields.selected.innerHTML = '';
 		for(let i = 0; i < this.selectedTags.length; i++)
-			this.fields.selected.innerHTML += TagTemplate.replaceAll('{name}', this.selectedTags[i]);
+			this.fields.selected.innerHTML += this.#GetTagHTML(this.selectedTags[i])
+
+		for(let i = 0; i < this.negativeTags.length; i++)
+			this.fields.selected.innerHTML += NegativeTagTemplate.replaceAll('{name}', this.negativeTags[i]);
 
 		for(let i = 0; i < this.suggestedTags.length; i++)
 			this.fields.selected.innerHTML += SuggestedTagTemplate.replaceAll('{name}', this.suggestedTags[i]);
@@ -224,8 +270,14 @@ export class TagInput {
 
 		switch(action) {
 			case 'remove': this.removeTag(tag); break;
+			case 'remove-negative': this.removeNegativeTag(tag); break;
 			case 'add':
-				this.addTag(tag);
+			case 'add-negative':
+				if(action == 'add')
+					this.addTag(tag);
+				else
+					this.addNegativeTag(tag);
+
 				this.closeAutocomplete();
 				this.fields.input.value = '';
 				this.highlightedTag = -1;
@@ -236,5 +288,23 @@ export class TagInput {
 				this.addTag(tag);
 				break;
 		}
+	}
+
+	#GetTagHTML(tagName, defaultTemplate = 'default') {
+		let template = {}
+		if(TagHandlers.has(tagName))
+			template = TagHandlers.get(tagName);
+		else
+			template = TagHandlers.get(defaultTemplate);
+	
+		if(tagName == 'explicit' && this.allowNSFWTagRemoval)
+			template.action = 'remove'; // Allow removal
+	
+		return TagTemplate
+				.replaceAll('{name}', tagName)
+				.replaceAll('{tooltip}', template.tooltip ?? '')
+				.replaceAll('{action}', template.action ?? '')
+				.replaceAll('{additionalText}', template.additionalText ?? '')
+				.replaceAll('{style}', template.style ?? '');
 	}
 }

@@ -1,25 +1,23 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
-import compression from 'compression';
-import MongoStore from 'connect-mongo';
-import fileUpload from 'express-fileupload';
-import expressSession from 'express-session';
-import { handler as ssrHandler } from '../web-frontend/dist/server/entry.mjs';
-import { config as configEnv } from 'dotenv';
+import express from 'express'
+import mongoose from 'mongoose'
+import bodyParser from 'body-parser'
+import compression from 'compression'
+import MongoStore from 'connect-mongo'
+import fileUpload from 'express-fileupload'
+import expressSession from 'express-session'
+import { handler as ssrHandler } from '../web-frontend/dist/server/entry.mjs'
+import 'dotenv/config'
 
 // DB Models
-import Tag from './models/tag.js';
-import Post from './models/post.js';
+import Tag from './models/tag.js'
+import Post from './models/post.js'
 
 // API imports
-import userAPI from './routes/user.js';
-import tagsAPI from './routes/tags.js';
-import loginAPI from './routes/login.js';
-import generationAPI from './routes/generation.js';
-import { Router as postsAPI } from './routes/posts.js';
-
-configEnv();
+import userAPI from './routes/user.js'
+import { router as tagsAPI } from './routes/tags.mjs'
+import loginAPI from './routes/login.js'
+import { router as generationAPI, checkNSFW } from './routes/generation.mjs'
+import { router as postsAPI } from './routes/posts.mjs'
 
 const app = express();
 
@@ -53,7 +51,7 @@ app.use(ssrHandler);
 // API //
 app.use('/api/tags', tagsAPI);
 app.use('/api/posts', postsAPI);
-app.use('/api/user', userAPI);
+app.use('/api/users', userAPI);
 app.use('/api/generate', generationAPI);
 app.use(loginAPI);
 
@@ -62,21 +60,7 @@ let port = process.env.PORT || 3000
 let sslKey = process.env.SSL_KEY
 let sslCert = process.env.SSL_CERT
 
-const onServerStart = async () => {
-	console.log(`Server started on port ${port}`)
-
-	// Update tag post counts
-	let tags = await Tag.find({})
-	for(let i = 0; i < tags.length; i++)
-	{
-		tags[i].postCount = await Post.countDocuments({ tags: tags[i]._id })
-
-		if(tags[i].postCount > 0)
-			await tags[i].save()
-		else
-			await Tag.findByIdAndDelete(tags[i]._id)
-	}
-}
+const onServerStart = async () => console.log(`Server started on port ${port}`)
 
 if(sslKey && sslCert)
 {

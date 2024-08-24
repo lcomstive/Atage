@@ -33,7 +33,7 @@ const isAuthor = session?.id == post.author
 				<div>
 					<h3>Info</h3>
 
-					<Horizontal><span>Poster:</span><a>{post.authorName}</a></Horizontal>
+					<Horizontal><span>Poster:</span><a href={`/users/${post.authorName}`}>{post.authorName}</a></Horizontal>
 					<span>{new Date(post.date).toDateString()}</span>
 				</div>
 			</div>

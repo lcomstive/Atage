@@ -14,6 +14,8 @@ apiParams.set('count', 15);
 
 if(Astro.url.searchParams.has('tags'))
 	apiParams.set('tags', Astro.url.searchParams.get('tags'));
+if(Astro.url.searchParams.has('negativeTags'))
+	apiParams.set('negativeTags', Astro.url.searchParams.get('negativeTags'));
 
 const sorting = Astro.url.searchParams.get('sort') ?? 'desc';
 apiParams.set('sort', `date:${sorting}`);
@@ -39,11 +41,27 @@ const session = await getSession();
 		</Horizontal>
 		<Horizontal>
 			<TagsInput style="flex-grow: 1" transition:persist />
+			<div id="btnSearchHelp" data-tooltip="See search modifiers" data-flow="left">
+				<Icon name="mingcute:question-fill" />
+			</div>
 			<button id="btnSort">
 				<Icon name="mingcute:sort-descending-line" class={sorting != 'desc' ? 'hidden' : ''} title="Sort posts descending" />
 				<Icon name="mingcute:sort-ascending-line"  class={sorting == 'desc' ? 'hidden' : ''} title="Sort posts ascending" />
 			</button>
 		</Horizontal>
+
+		<div id="searchHelp" class="secondary lighter hidden">
+			<table>
+				<tr>
+					<th>Modifier</th>
+					<th>Effect</th>
+				</tr>
+				<tr>
+					<td>-</td>
+					<td>Put before search input to remove posts with that tag</td>
+				</tr>
+			</table>
+		</div>
 
 		<div class="allPostsContainer">
 			{posts.map(post => <a href={`/posts/${post._id}`}><Post post={post} useThumbnail={true} data-postid={post._id} /></a> )}
@@ -60,10 +78,17 @@ const session = await getSession();
 	function onTagsChanged(ev) {
 		// Navigate to new URL with tags
 		const url = new URL(window.location.href);
-		if(ev.detail?.length > 0)
-			url.searchParams.set('tags', ev.detail);
+		// this.container.dispatchEvent(new CustomEvent(TagsEventName, { detail: { selected: this.selectedTags, negated: this.negativeTags } }))
+		let tags = ev.detail.selected, negated = ev.detail.negated
+		if(tags?.length > 0)
+			url.searchParams.set('tags', tags);
 		else
 			url.searchParams.delete('tags');
+
+		if(negated?.length > 0)
+			url.searchParams.set('negativeTags', negated);
+		else
+			url.searchParams.delete('negativeTags');
 
 		navigate(url.toString());
 	}
@@ -88,11 +113,20 @@ const session = await getSession();
 
 		// Get search tags from URL
 		let tags = new URLSearchParams(window.location.search).get('tags')?.split(',') ?? [];
+		let negativeTags = new URLSearchParams(window.location.search).get('negativeTags')?.split(',') ?? [];
 		let tagInput = new TagInput(tagInputEl);
+		tagInput.allowNSFWTagRemoval = true; // Allow user to remove the 'explicit' tag from search tags
 		tagInput.addTags(tags);
+		tagInput.addNegativeTags(negativeTags);
 
 		// Response to tag change events
 		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
+
+		// Search help events
+		let btnSearchHelp = document.getElementById('btnSearchHelp');
+		let searchHelp = document.getElementById('searchHelp');
+
+		btnSearchHelp.addEventListener('click', () => searchHelp.classList.toggle('hidden'));
 	}
 
 	function removeListeners() {
@@ -153,8 +187,37 @@ const session = await getSession();
 		height: 35px;
 		padding: 0;
 		padding-top: 5px;
-		font-size: 1.2em;
+		font-size: 1.5em;
 		border: none;
+	}
+
+	#btnSearchHelp {
+		width: 27px;
+		height: 27px;
+		padding: 0;
+		padding-top: 5px;
+		cursor: help
+	}
+
+	#btnSearchHelp > svg {
+		width: 100%;
+		height: 100%;
+	}
+
+	#searchHelp {
+		padding: 10px 0px;
+		margin-bottom: 10px;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		text-align: left;
+	}
+
+	table td:first-child, table th:first-child {
+		text-align: center;
+		width: 100px;
 	}
 
 	/* Mobile */

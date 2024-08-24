@@ -1,5 +1,6 @@
 const express = require('express')
 const User = require('../models/user.js')
+const Post = require('../models/post.js')
 const bcrypt = require('bcrypt')
 
 const router = express.Router()
@@ -39,7 +40,8 @@ router.post('/updatePassword', async (req, res) =>
 	})
 })
 
-router.post('/updateUsername', async (req, res) => {
+router.post('/updateUsername', async (req, res) =>
+{
 	if(!req.session.user)
 		return res.status(403).json({ error: 'Not logged in' })
 
@@ -54,6 +56,33 @@ router.post('/updateUsername', async (req, res) => {
 	await user.save()
 
 	return res.json({ success: true })
+})
+
+router.get('/:username/posts', async (req, res) =>
+{
+	let user = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'mi') })
+	if(!user)
+		return res.status(404).json({ error: 'User not found' })
+
+	let query = {
+		$and: [
+			{ public: true },
+			{ author: user._id }
+		]
+	}
+
+	// If logged in as `username` then get all posts
+	if(user._id == req.session?.userID)
+		query = { author: user._id }
+
+	let posts = await Post.find(query)
+	return posts ? res.json(posts) : res.status(500).json({ error: 'Could not find posts for this user' })
+})
+
+router.get('/:username', async (req, res) =>
+{
+	let user = await User.findOne({ username: new RegExp(`^${req.params.username}$`, 'mi') })
+	return user ? res.json(user) : res.status(404).json({ error: 'User not found' });
 })
 
 module.exports = router
