@@ -316,6 +316,19 @@ router.get('/', async (req, res) =>
 			tags.push(tag._id)
 	}
 
+	// Inverted/Negative Tags //
+	tagsRaw = req.query.negativeTags ?? null
+	if(tagsRaw)
+		tagsRaw = decodeURI(tagsRaw).split(',')
+	let negativeTags = []
+	for(let i = 0; i < tagsRaw?.length ?? 0; i++)
+	{
+		tagsRaw[i] = tagsRaw[i].toLowerCase()
+		let tag = await Tag.findOne({ name: tagsRaw[i] })
+		if(tag && !tags.includes(tag._id) /* Positive tag takes priority */)
+			negativeTags.push(tag._id)
+	}
+
 	// Query //
 	let query = { $or: [
 		{ public: true },
@@ -323,8 +336,10 @@ router.get('/', async (req, res) =>
 	]}
 	let options = {}
 
-	if(tags.length > 0)
+	if(tags?.length > 0)
 		query.$and = [{ tags: { $all: tags } }]
+	if(negativeTags?.length > 0)
+		query.$nor = [{ tags: { $in: negativeTags }}]
 
 	// Sorting //
 	options.sort = translateSortQuery(req.query.sort ?? 'id')

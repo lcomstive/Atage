@@ -14,6 +14,8 @@ apiParams.set('count', 15);
 
 if(Astro.url.searchParams.has('tags'))
 	apiParams.set('tags', Astro.url.searchParams.get('tags'));
+if(Astro.url.searchParams.has('negativeTags'))
+	apiParams.set('negativeTags', Astro.url.searchParams.get('negativeTags'));
 
 const sorting = Astro.url.searchParams.get('sort') ?? 'desc';
 apiParams.set('sort', `date:${sorting}`);
@@ -60,10 +62,17 @@ const session = await getSession();
 	function onTagsChanged(ev) {
 		// Navigate to new URL with tags
 		const url = new URL(window.location.href);
-		if(ev.detail?.length > 0)
-			url.searchParams.set('tags', ev.detail);
+		// this.container.dispatchEvent(new CustomEvent(TagsEventName, { detail: { selected: this.selectedTags, negated: this.negativeTags } }))
+		let tags = ev.detail.selected, negated = ev.detail.negated
+		if(tags?.length > 0)
+			url.searchParams.set('tags', tags);
 		else
 			url.searchParams.delete('tags');
+
+		if(negated?.length > 0)
+			url.searchParams.set('negativeTags', negated);
+		else
+			url.searchParams.delete('negativeTags');
 
 		navigate(url.toString());
 	}
@@ -88,9 +97,11 @@ const session = await getSession();
 
 		// Get search tags from URL
 		let tags = new URLSearchParams(window.location.search).get('tags')?.split(',') ?? [];
+		let negativeTags = new URLSearchParams(window.location.search).get('negativeTags')?.split(',') ?? [];
 		let tagInput = new TagInput(tagInputEl);
 		tagInput.allowNSFWTagRemoval = true; // Allow user to remove the 'explicit' tag from search tags
 		tagInput.addTags(tags);
+		tagInput.addNegativeTags(negativeTags);
 
 		// Response to tag change events
 		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
