@@ -53,7 +53,7 @@ app.use(ssrHandler);
 // API //
 app.use('/api/tags', tagsAPI);
 app.use('/api/posts', postsAPI);
-app.use('/api/user', userAPI);
+app.use('/api/users', userAPI);
 app.use('/api/generate', generationAPI);
 app.use(loginAPI);
 
