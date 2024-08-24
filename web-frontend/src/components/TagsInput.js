@@ -16,7 +16,7 @@ const TagHandlers = new Map([
 ])
 
 export class TagInput {
-	constructor(container, allowNewTags) {
+	constructor(container, allowNewTags, allowNegativeTags = true) {
 		this.container = container;
 		this.fields = {
 			input: container.getElementsByTagName('input')[0],
@@ -31,6 +31,7 @@ export class TagInput {
 		this.highlightedTag = null;
 		this.showingAutocomplete = false;
 		this.allowNewTags = allowNewTags || this.fields.add;
+		this.allowNegativeTags = allowNegativeTags;
 
 		this.container.addEventListener('click', ev => this.#onTagClicked(ev));
 		this.fields.input.addEventListener('beforeinput', this.#checkInput);
@@ -57,12 +58,13 @@ export class TagInput {
 		let negative = value.startsWith('-')
 		if(negative)
 			value = value.substring(1) // Exclude negative operator from tag search
+		negative = negative && this.allowNegativeTags
 
 		this.debounceTimer = setTimeout(() => {
 			fetch(`/api/tags?search=${value}&sort=-postCount&count=25`)
 				.then(response => response.json())
 				.then(tags => {
-					tags = tags.filter(x => !this.selectedTags.includes(x.name));
+					tags = tags.filter(x => !this.selectedTags.includes(x.name) && !this.negativeTags.includes(x.name));
 					this.highlightedTag = -1;
 					if(tags.length == 0)
 					{
@@ -112,7 +114,11 @@ export class TagInput {
 		this.closeAutocomplete();
 
 		name = name.toLowerCase();
-		if(!name || name == '' || this.selectedTags.includes(name))
+		
+		if(name.startsWith('-')) // Remove negation modifier
+			name = name.substring(1);
+
+		if(!name || name == '' || this.selectedTags.includes(name) || this.negativeTags.includes(name))
 			return;
 
 		this.addTag(name);
@@ -151,7 +157,7 @@ export class TagInput {
 				else if(!data.success)
 					return console.error(`Failed to generate suggest tags - unknown error`);
 
-				this.suggestedTags = data.tags.filter(x => !this.selectedTags.includes(x));
+				this.suggestedTags = data.tags.filter(x => !this.selectedTags.includes(x) && !this.negativeTags.includes(x));
 				this.#refreshSelectedList();
 			})
 			.catch(err => console.error(err));
