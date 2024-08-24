@@ -89,6 +89,7 @@ const session = await getSession();
 		// Get search tags from URL
 		let tags = new URLSearchParams(window.location.search).get('tags')?.split(',') ?? [];
 		let tagInput = new TagInput(tagInputEl);
+		tagInput.allowNSFWTagRemoval = true; // Allow user to remove the 'explicit' tag from search tags
 		tagInput.addTags(tags);
 
 		// Response to tag change events

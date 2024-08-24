@@ -14,21 +14,6 @@ const TagHandlers = new Map([
 	[ 'anime', { action: 'remove', tooltip: 'UwU' }]
 ])
 
-const GetTagHTML = (tagName, defaultTemplate = 'default') => {
-	let template = {}
-	if(TagHandlers.has(tagName))
-		template = TagHandlers.get(tagName);
-	else
-		template = TagHandlers.get(defaultTemplate);
-
-	return TagTemplate
-			.replaceAll('{name}', tagName)
-			.replaceAll('{tooltip}', template.tooltip ?? '')
-			.replaceAll('{action}', template.action ?? '')
-			.replaceAll('{additionalText}', template.additionalText ?? '')
-			.replaceAll('{style}', template.style ?? '');
-}
-
 export class TagInput {
 	constructor(container, allowNewTags) {
 		this.container = container;
@@ -151,7 +136,7 @@ export class TagInput {
 	#refreshSelectedList() {
 		this.fields.selected.innerHTML = '';
 		for(let i = 0; i < this.selectedTags.length; i++)
-			this.fields.selected.innerHTML += GetTagHTML(this.selectedTags[i])
+			this.fields.selected.innerHTML += this.#GetTagHTML(this.selectedTags[i])
 
 		for(let i = 0; i < this.suggestedTags.length; i++)
 			this.fields.selected.innerHTML += SuggestedTagTemplate.replaceAll('{name}', this.suggestedTags[i]);
@@ -260,5 +245,23 @@ export class TagInput {
 				this.addTag(tag);
 				break;
 		}
+	}
+
+	#GetTagHTML(tagName, defaultTemplate = 'default') {
+		let template = {}
+		if(TagHandlers.has(tagName))
+			template = TagHandlers.get(tagName);
+		else
+			template = TagHandlers.get(defaultTemplate);
+	
+		if(tagName == 'explicit' && this.allowNSFWTagRemoval)
+			template.action = 'remove'; // Allow removal
+	
+		return TagTemplate
+				.replaceAll('{name}', tagName)
+				.replaceAll('{tooltip}', template.tooltip ?? '')
+				.replaceAll('{action}', template.action ?? '')
+				.replaceAll('{additionalText}', template.additionalText ?? '')
+				.replaceAll('{style}', template.style ?? '');
 	}
 }
