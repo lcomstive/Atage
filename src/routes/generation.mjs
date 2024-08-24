@@ -4,6 +4,7 @@ import Post from '../models/post.js'
 import auth from '../middleware/auth.js'
 import { pipeline, env } from '@xenova/transformers'
 import { VideoExtensions, PostMediaDirectory } from '../utils.mjs'
+import sharp from 'sharp'
 
 const LLM = {
 	enabled: process.env.LLM_ENABLE ?? true,
@@ -102,7 +103,11 @@ router.get('/tags/:id', auth, async (req, res) => {
 	if(VideoExtensions.includes(extension))
 		return res.status(400).json({ error: `Video files are not supported for tag classification` })
 
-	generateTags(fs.readFileSync(`${PostMediaDirectory}/${post.filepath}`).toString('base64'))
+	let buffer = fs.readFileSync(`${PostMediaDirectory}/${post.filepath}`)
+	if(extension == '.webp')
+		buffer = await sharp(buffer).jpeg().toBuffer()
+
+	generateTags(buffer.toString('base64'))
 		.then(tags => res.json({ tags, success: true }))
 		.catch(error => res.status(500).json({ error }))
 })
@@ -115,9 +120,14 @@ router.post('/tags', auth, async (req, res) => {
 		return res.status(200).json({ tags: [], warning: 'Image recognition is not enabled on this instance' })
 
 	if(![ 'image/jpeg', 'image/png', 'image/webp' ].includes(req.headers['content-type']))
-		return res.status(404).json({ error: 'Only png and jpeg image formats are supported' })
+		return res.status(404).json({ error: 'Only png, jpeg and webp image formats are supported' })
 
-	generateTags(req.body.toString('base64'))
+	let buffer = req.body
+
+	if(req.headers['content-type'] == 'image/webp')
+		buffer = await sharp(buffer).jpeg().toBuffer() // Convert webp to jpeg buffer
+
+	generateTags(buffer.toString('base64'))
 		.then(tags => res.json({ tags, success: true }))
 		.catch(error => res.status(500).json({ error }))
 })
