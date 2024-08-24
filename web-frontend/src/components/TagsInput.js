@@ -113,6 +113,8 @@ export class TagInput {
 			.then(data => {
 				if(data.error)
 					return console.error(`Failed to generate suggested tags - ${data.error}`);
+				else if(data.warning)
+					return console.warn(`Failed to generate suggested tags - ${data.warning}`);
 				else if(!data.success)
 					return console.error(`Failed to generate suggest tags - unknown error`);
 

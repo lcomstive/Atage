@@ -56,7 +56,7 @@ async function generateTags(res, imageBase64) {
 	})
 
 	if(response.status == 404)
-		return res.status(500).json({ error: 'Image recognition is not enabled on this instance' })
+		return res.status(200).json({ tags: [], warning: 'Image recognition is not enabled on this instance' })
 
 	const json = await response.json()
 
@@ -75,7 +75,7 @@ async function generateTags(res, imageBase64) {
 */
 router.get('/tags/:id', auth, async (req, res) => {
 	if(!LLM.enabled)
-		return res.status(500).json({ error: 'Image recognition is not enabled on this instance' })
+		return res.status(200).json({ tags: [], warning: 'Image recognition is not enabled on this instance' })
 
 	let post = await Post.findById(req.params.id)
 	if(!post)
@@ -98,7 +98,7 @@ router.get('/tags/:id', auth, async (req, res) => {
 */
 router.post('/tags', auth, async (req, res) => {
 	if(!LLM.enabled)
-		return res.status(500).json({ error: 'Image recognition is not enabled on this instance' })
+		return res.status(200).json({ tags: [], warning: 'Image recognition is not enabled on this instance' })
 
 	if(![ 'image/jpeg', 'image/png', 'image/webp' ].includes(req.headers['content-type']))
 		return res.status(404).json({ error: 'Only png and jpeg image formats are supported' })

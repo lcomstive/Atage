@@ -94,7 +94,8 @@ if(session?.id != post.author)
 
 		// Tags Input //	
 		tagsInput = new TagInput(elements.tags);
-		tagsInput.addTags(post.tagData.map(x => x.name));
+		if(post.tagData?.length > 0)
+			tagsInput.addTags(post.tagData?.map(x => x.name));
 		tagsInput.generateSuggestedTags(post._id);
 
 		// Button Events //
