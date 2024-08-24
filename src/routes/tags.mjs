@@ -1,8 +1,8 @@
-const express = require('express')
-const Tag = require('../models/tag.js')
-const { translateSortQuery } = require('../utils')
+import { Router } from 'express'
+import Tag from '../models/tag.js'
+import { translateSortQuery } from '../utils.mjs'
 
-const router = express.Router()
+export const router = Router()
 
 // Get tags
 router.get('/', async (req, res) =>
@@ -74,5 +74,3 @@ router.post('/:name/delete', async (req, res) =>
 	await Tag.deleteOne({ name })
 	res.status(200).json({})
 })
-
-module.exports = router

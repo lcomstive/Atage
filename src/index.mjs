@@ -1,25 +1,23 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
-import compression from 'compression';
-import MongoStore from 'connect-mongo';
-import fileUpload from 'express-fileupload';
-import expressSession from 'express-session';
-import { handler as ssrHandler } from '../web-frontend/dist/server/entry.mjs';
-import { config as configEnv } from 'dotenv';
+import express from 'express'
+import mongoose from 'mongoose'
+import bodyParser from 'body-parser'
+import compression from 'compression'
+import MongoStore from 'connect-mongo'
+import fileUpload from 'express-fileupload'
+import expressSession from 'express-session'
+import { handler as ssrHandler } from '../web-frontend/dist/server/entry.mjs'
+import 'dotenv/config'
 
 // DB Models
-import Tag from './models/tag.js';
-import Post from './models/post.js';
+import Tag from './models/tag.js'
+import Post from './models/post.js'
 
 // API imports
-import userAPI from './routes/user.js';
-import tagsAPI from './routes/tags.js';
-import loginAPI from './routes/login.js';
-import generationAPI from './routes/generation.js';
-import { Router as postsAPI } from './routes/posts.js';
-
-configEnv();
+import userAPI from './routes/user.js'
+import { router as tagsAPI } from './routes/tags.mjs'
+import loginAPI from './routes/login.js'
+import { router as generationAPI, checkNSFW } from './routes/generation.mjs'
+import { router as postsAPI } from './routes/posts.mjs'
 
 const app = express();
 

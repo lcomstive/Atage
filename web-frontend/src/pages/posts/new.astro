@@ -163,13 +163,16 @@ if(session == null)
 		});
 
 		post.upload.onload = () => {
+			console.log(post.upload.response)
 			if(post.upload.status != 200 || !post.upload.response.success)
 			{
 				setError(post.upload.response.error);
 				return;
 			}
 
-			post.id = post.upload.response.postIDs[0];
+			let postData = post.upload.response.posts[0]
+			post.id = postData.id
+			post.tagInput.addTags(postData.tags)
 			post.preview.style.opacity = 1;
 			post.upload = null;
 			setTimeout(() => post.progressBar.style.display = 'none', 200);

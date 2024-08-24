@@ -111,6 +111,8 @@ export class TagInput {
 		fetch(`/api/generate/tags/${postID}`)
 			.then(response => response.json())
 			.then(data => {
+				console.log(data)
+				
 				if(data.error)
 					return console.error(`Failed to generate suggested tags - ${data.error}`);
 				else if(data.warning)

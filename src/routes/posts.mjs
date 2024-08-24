@@ -1,21 +1,40 @@
-const express = require('express')
-const Post = require('../models/post')
-const Tag = require('../models/tag')
-const User = require('../models/user')
-const auth = require('../middleware/auth')
-const path = require('path')
-const fs = require('fs')
-const sharp = require('sharp')
-const { ThumbnailExtension, VideoExtensions, translateSortQuery } = require('../utils')
 
-const ffmpeg = require('fluent-ffmpeg')
-ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path)
+import fs from 'fs'
+import sharp from 'sharp'
+import { Router } from 'express'
+import ffmpeg from 'fluent-ffmpeg'
+import { path as FFMPEGPath } from '@ffmpeg-installer/ffmpeg'
 
-const router = express.Router()
+import Post from '../models/post.js'
+import Tag from '../models/tag.js'
+import User from '../models/user.js'
+import auth from '../middleware/auth.js'
 
-const PostMediaDirectory = path.join(__dirname, '../../user-content')
+import { checkNSFW } from './generation.mjs'
+import { ThumbnailExtension, VideoExtensions, translateSortQuery, PostMediaDirectory } from '../utils.mjs'
 
-addPostMeta = async (post, req, desiredFields = null) =>
+ffmpeg.setFfmpegPath(FFMPEGPath)
+
+export const router = Router()
+
+const nsfwTagName = 'explicit'
+let nsfwTagID = null
+const getNSFWTag = async () =>
+{
+	if(nsfwTagID)
+		return nsfwTagID
+
+	nsfwTagID = await Tag.findOne({ name: nsfwTagName })
+	if(!nsfwTagID)
+	{
+		let nsfwTag = await Tag.create({ name: nsfwTagName, postCount: 0 })
+		nsfwTag.save()
+		nsfwTagID = nsfwTag._id
+	}
+	return nsfwTagID	
+}
+
+const addPostMeta = async (post, req, desiredFields = null) =>
 {
 	// Deep copy of results so we don't modify original
 	post = JSON.parse(JSON.stringify(post))
@@ -52,7 +71,7 @@ addPostMeta = async (post, req, desiredFields = null) =>
 	return post
 }
 
-updateTagPostCount = async (tagID) =>
+const updateTagPostCount = async (tagID) =>
 {
 	let tag = await Tag.findById(tagID)
 	tag.postCount = await Post.countDocuments({ tags: tagID })
@@ -70,7 +89,7 @@ const fieldsDependencies =
 	{ field: 'isauthor', dependsOn: 'author' },
 	{ field: 'isvideo', dependsOn: 'filepath' }
 ]
-getDesiredFields = (fields) =>
+const getDesiredFields = (fields) =>
 {
 	fields = fields?.filter(x => x && x != '')
 					.map(x => x.toLowerCase().trim())
@@ -136,7 +155,7 @@ router.post('/new', auth, async (req, res) =>
 		req.files.media = [req.files.media]
 
 	let allTags = []
-	let postIDs = []
+	let output = []
 
 	for(let i = 0; i < req.files?.media.length ?? 0; i++)
 	{
@@ -146,10 +165,10 @@ router.post('/new', auth, async (req, res) =>
 			description: posts[i].description ?? '',
 			date: new Date().toISOString()
 		})
-		postIDs.push(post._id)
 
 		// Tags
 		post.tags = []
+		let tagNames = []
 		for(let t = 0; t < posts[i].tags?.length ?? 0; t++)
 		{
 			let tagRaw = posts[i].tags[t].toLowerCase()
@@ -159,6 +178,7 @@ router.post('/new', auth, async (req, res) =>
 
 			post.tags.push(tag._id)
 			allTags.push(tag._id)
+			tagNames.push(tagRaw)
 		}
 
 		// Post media
@@ -167,16 +187,26 @@ router.post('/new', auth, async (req, res) =>
 		let mediaOutput = `${PostMediaDirectory}/${post.filepath}`
 
 		await req.files.media[i].mv(mediaOutput)
-			.then(() => generateThumbnail(mediaOutput, extension))
 			.catch(err => console.error(`Failed to create file '${mediaOutput}'`, err))
-		
+
+		generateThumbnail(mediaOutput, extension)
+
+		let nsfwLabels = await checkNSFW(mediaOutput)
+		if(nsfwLabels[0].label == 'nsfw') // More likely NSFW than SFW
+		{
+			tagNames.push(nsfwTagName)
+			post.tags.push(await getNSFWTag())
+		}
+
 		await post.save()
+
+		output.push({ id: post._id, tags: tagNames })
 	}
 
 	for(let i = 0; i < allTags.length; i++)
 		updateTagPostCount(allTags[i])
 		
-	res.json({ success: true, postIDs })
+	res.json({ success: true, posts: output })
 })
 
 // Update post
@@ -339,9 +369,3 @@ router.get('/', async (req, res) =>
 
 	return res.json(posts)
 })
-
-module.exports = {
-	Router: router,
-
-	PostMediaDirectory
-}
