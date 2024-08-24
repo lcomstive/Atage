@@ -11,7 +11,7 @@ import User from '../models/user.js'
 import auth from '../middleware/auth.js'
 
 import { checkNSFW } from './generation.mjs'
-import { updateTagPostCount } from './tags.mjs'
+import { updateTagPostCount, NSFWTagName, getNSFWTagID } from './tags.mjs'
 import { ThumbnailExtension, VideoExtensions, translateSortQuery, PostMediaDirectory } from '../utils.mjs'
 
 ffmpeg.setFfmpegPath(FFMPEGPath)
@@ -167,8 +167,8 @@ router.post('/new', auth, async (req, res) =>
 		let nsfwLabels = await checkNSFW(mediaOutput)
 		if(nsfwLabels[0].label == 'nsfw') // More likely NSFW than SFW
 		{
-			tagNames.push(nsfwTagName)
-			post.tags.push(await getNSFWTag())
+			tagNames.push(NSFWTagName)
+			post.tags.push(await getNSFWTagID())
 		}
 
 		await post.save()

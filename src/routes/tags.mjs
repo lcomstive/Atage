@@ -5,7 +5,7 @@ import { translateSortQuery } from '../utils.mjs'
 
 export const router = Router()
 
-const NSFWTagName = 'explicit'
+export const NSFWTagName = 'explicit'
 let NSFWTagID = null
 export const getNSFWTagID = async () =>
 {
