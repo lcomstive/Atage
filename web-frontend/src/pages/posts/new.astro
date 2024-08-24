@@ -6,6 +6,7 @@ import TagsInput from "../../components/TagsInput.astro";
 import Horizontal from "../../components/Horizontal.astro";
 import Space from "../../components/Space.astro";
 import { getSession } from "../../scripts/Authenticate";
+import ProgressBar from "../../components/ProgressBar.astro";
 
 const title = 'New Post';
 
@@ -35,7 +36,9 @@ if(session == null)
 		<div id="newPostsContainer">
 			<template id="postTemplate">
 				<div class="post">
-					<div class="postPreview"></div>
+					<div class="postPreview">
+						<ProgressBar />
+					</div>
 		
 					<Vertical>
 						<TagsInput addButton={true} />
@@ -57,7 +60,6 @@ if(session == null)
 
 		<div style="display: flex; justify-content: center">
 			<button id="btnCreate" class="accent light">Upload</button>
-			<!-- TODO: Progress bar  -->
 		</div>
 		<span class="error light hidden">Error text</span>
 	</Vertical>
@@ -66,6 +68,7 @@ if(session == null)
 <script>
 	import { navigate } from "astro:transitions/client";
 	import { TagInput } from "../../components/TagsInput";
+	import { setProgress } from "../../components/ProgressBar.js";
 
 	const VideoExtensions = [
 		'mp4',
@@ -107,6 +110,7 @@ if(session == null)
 				container: postEl,
 				media: inputFiles.files[i],
 				preview: postPreview,
+				progressBar: postEl.getElementsByClassName('progressBar')[0],
 
 				// Tags input
 				tagInput: new TagInput(postEl.getElementsByClassName('tagsInput')[0])
@@ -155,6 +159,7 @@ if(session == null)
 		post.upload.upload.addEventListener('progress', ev => {
 			let progress = (ev.loaded / ev.total) * 100;
 			console.log(`Upload progress: ${progress}%`);
+			setProgress(post.progressBar, progress);
 		});
 
 		post.upload.onload = () => {
@@ -167,6 +172,7 @@ if(session == null)
 			post.id = post.upload.response.postIDs[0];
 			post.preview.style.opacity = 1;
 			post.upload = null;
+			setTimeout(() => post.progressBar.style.display = 'none', 200);
 			// console.log(`Post ID: ${post.id}`);
 
 			post.tagInput.generateSuggestedTags(post.id);
@@ -293,6 +299,7 @@ if(session == null)
 	.postPreview {
 		width: 35%;
 		margin: auto 0;
+		position: relative;
 	}
 
 	.postPreview > *
@@ -309,6 +316,14 @@ if(session == null)
 
 	#btnCreate:disabled {
 		display: none;
+	}
+
+	.postPreview > .progressBar {
+		position: absolute;
+		top: 0; bottom: 0;
+		left: 0; right: 0;
+		margin: auto;
+		background: rgba(var(--background), 0.5);
 	}
 
 	@media screen and (max-width: 750px) {

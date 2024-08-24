@@ -1,0 +1,33 @@
+---
+const { ...attrs } = Astro.props;
+---
+
+<div class="progressBar" {...attrs}><div></div></div>
+
+<script src="./ProgressBar.js"></script>
+
+<style>
+.progressBar {
+	width: 50%;
+	margin: 0 auto;
+	height: 22px;
+	border-radius: 20px;
+	color: rgb(var(--accent));
+	border: 2px solid;
+	position: relative;
+}
+  
+.progressBar > div {
+	content: "";
+	position: absolute;
+	margin: 2px;
+	border-radius: inherit;
+	background: currentColor;
+
+	/* Change percentage by modifying second value */
+	/* Value is inverted, so '20%' is 80% full and '40%' is 60% full */
+	inset: 0 50% 0 0;
+
+	transition: inset 0.2s ease-out;
+}
+</style>
