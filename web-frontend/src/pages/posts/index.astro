@@ -41,11 +41,27 @@ const session = await getSession();
 		</Horizontal>
 		<Horizontal>
 			<TagsInput style="flex-grow: 1" transition:persist />
+			<div id="btnSearchHelp" data-tooltip="See search modifiers" data-flow="left">
+				<Icon name="mingcute:question-fill" />
+			</div>
 			<button id="btnSort">
 				<Icon name="mingcute:sort-descending-line" class={sorting != 'desc' ? 'hidden' : ''} title="Sort posts descending" />
 				<Icon name="mingcute:sort-ascending-line"  class={sorting == 'desc' ? 'hidden' : ''} title="Sort posts ascending" />
 			</button>
 		</Horizontal>
+
+		<div id="searchHelp" class="secondary lighter hidden">
+			<table>
+				<tr>
+					<th>Modifier</th>
+					<th>Effect</th>
+				</tr>
+				<tr>
+					<td>-</td>
+					<td>Put before search input to remove posts with that tag</td>
+				</tr>
+			</table>
+		</div>
 
 		<div class="allPostsContainer">
 			{posts.map(post => <a href={`/posts/${post._id}`}><Post post={post} useThumbnail={true} data-postid={post._id} /></a> )}
@@ -105,6 +121,12 @@ const session = await getSession();
 
 		// Response to tag change events
 		tagInputEl?.addEventListener('tagsChanged', onTagsChanged);
+
+		// Search help events
+		let btnSearchHelp = document.getElementById('btnSearchHelp');
+		let searchHelp = document.getElementById('searchHelp');
+
+		btnSearchHelp.addEventListener('click', () => searchHelp.classList.toggle('hidden'));
 	}
 
 	function removeListeners() {
@@ -165,8 +187,37 @@ const session = await getSession();
 		height: 35px;
 		padding: 0;
 		padding-top: 5px;
-		font-size: 1.2em;
+		font-size: 1.5em;
 		border: none;
+	}
+
+	#btnSearchHelp {
+		width: 27px;
+		height: 27px;
+		padding: 0;
+		padding-top: 5px;
+		cursor: help
+	}
+
+	#btnSearchHelp > svg {
+		width: 100%;
+		height: 100%;
+	}
+
+	#searchHelp {
+		padding: 10px 0px;
+		margin-bottom: 10px;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		text-align: left;
+	}
+
+	table td:first-child, table th:first-child {
+		text-align: center;
+		width: 100px;
 	}
 
 	/* Mobile */
