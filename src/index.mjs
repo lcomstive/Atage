@@ -8,10 +8,6 @@ import expressSession from 'express-session'
 import { handler as ssrHandler } from '../web-frontend/dist/server/entry.mjs'
 import 'dotenv/config'
 
-// DB Models
-import Tag from './models/tag.js'
-import Post from './models/post.js'
-
 // API imports
 import userAPI from './routes/user.js'
 import { router as tagsAPI } from './routes/tags.mjs'
