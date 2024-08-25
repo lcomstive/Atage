@@ -196,6 +196,7 @@ const updatePost = async (id, data) =>
 	post.description = data.description ?? ''
 
 	let allTags = post.tags
+	post.tags = []
 	for(let i = 0; i < data.tags?.length; i++)
 	{
 		let tag = await Tag.findOne({ name: data.tags[i].toLowerCase() })
