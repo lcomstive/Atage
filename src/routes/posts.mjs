@@ -80,7 +80,7 @@ const getDesiredFields = (fields) =>
 }
 
 // Create post
-function generateThumbnail(mediaOutput, extension) {
+const generateThumbnail = (mediaOutput, extension) => new Promise((resolve, reject) => {
 	let isVideo = VideoExtensions.includes(extension)
 	
 	if(isVideo)
@@ -100,7 +100,12 @@ function generateThumbnail(mediaOutput, extension) {
 					.resize(400 /* width, px */)
 					.toFile(`${mediaOutput}${ThumbnailExtension}`)
 					.then(() => fs.unlinkSync(`${mediaOutput}_thumbnail.jpg`)) // Delete temp thumbnail
-					.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
+					.then(resolve)
+					.catch(err =>
+					{
+						console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err)
+						reject(err)
+					})
 			})
 			.run()
 	}
@@ -110,9 +115,14 @@ function generateThumbnail(mediaOutput, extension) {
 		sharp(fileContents)
 			.resize(400 /* width, px */)
 			.toFile(`${mediaOutput}${ThumbnailExtension}`)
-			.catch(err => console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err))
+			.then(resolve)
+			.catch(err =>
+			{
+				console.error(`Failed to generate thumbnail for '${mediaOutput}'`, err)
+				reject(err)
+			})
 	}
-}
+})
 
 router.post('/new', auth, async (req, res) =>
 {
@@ -162,14 +172,23 @@ router.post('/new', auth, async (req, res) =>
 		await req.files.media[i].mv(mediaOutput)
 			.catch(err => console.error(`Failed to create file '${mediaOutput}'`, err))
 
+		let isVideo = VideoExtensions.includes(extension)
 		generateThumbnail(mediaOutput, extension)
+			.then(async () =>
+			{
+				if(!process.env.DETECT_NSFW) return // Disabled feature
+				
+				let nsfwLabels = await checkNSFW(mediaOutput + (isVideo ? ThumbnailExtension : ''))
+				if(nsfwLabels[0].label != 'nsfw')
+					return // More likely SFW than NSFW
 
-		let nsfwLabels = await checkNSFW(mediaOutput)
-		if(nsfwLabels[0].label == 'nsfw') // More likely NSFW than SFW
-		{
-			tagNames.push(NSFWTagName)
-			post.tags.push(await getNSFWTagID())
-		}
+				// Re-fetch post, may have changed by the time this async operation finished
+				post = Post.findById(post._id)
+
+				post.tags.push(await getNSFWTagID())
+				post.save()
+			})
+			.catch(console.error)
 
 		await post.save()
 
